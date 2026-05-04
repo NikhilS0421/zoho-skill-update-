@@ -10,7 +10,7 @@ const app = express();
 
 /* ---------- MIDDLEWARE ---------- */
 app.use(cors({
-  origin: "https://zoho-skill-update-9psf.vercel.app/", // 🔁 replace if your URL is different
+  origin: "https://zoho-skill-update.vercel.app", // 🔁 replace if your URL is different
   credentials: true
 }));
 
