@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const dns = require('dns');
+const net = require('net');
 require("dotenv").config();
 
 const nodemailer = require("nodemailer");
@@ -39,9 +41,10 @@ app.use((req, res, next) => {
 /* ---------- OTP STORE ---------- */
 const otpStore = {};
 
-/* ---------- EMAIL SETUP ---------- */
-// Updated to a more robust configuration to prevent ETIMEDOUT on Render
-/* ---------- EMAIL SETUP ---------- */
+/* ---------- EMAIL SETUP WITH IPv4 FORCE ---------- */
+// Force IPv4 for DNS resolution
+dns.setDefaultResultOrder('ipv4first');
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -50,24 +53,33 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  // Connection timeout settings
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 10000
+  // Custom connection handling to force IPv4
+  customConnections: true,
+  connection: {
+    lookup: (hostname, options, callback) => {
+      // Force IPv4 lookup
+      dns.lookup(hostname, { family: 4 }, callback);
+    }
+  }
 });
 
-// Verify connection configuration on startup
+// Verify connection on startup
 transporter.verify(function (error, success) {
   if (error) {
     console.error('SMTP connection error:', error);
+    console.log('Attempting alternative connection method...');
   } else {
-    console.log('SMTP server is ready to take our messages');
+    console.log('✅ SMTP server is ready to take our messages');
   }
 });
 
 /* ---------- HEALTH CHECK ---------- */
 app.get("/", (req, res) => {
-  res.json({ message: "Backend running ✅" });
+  res.json({ 
+    message: "Backend running ✅",
+    emailConfigured: !!process.env.EMAIL_USER,
+    timestamp: new Date().toISOString()
+  });
 });
 
 /* ---------- SEND OTP ---------- */
@@ -82,26 +94,109 @@ app.post("/send-otp", async (req, res) => {
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000);
-  otpStore[email] = otp;
+  otpStore[email] = {
+    otp: otp,
+    timestamp: Date.now(),
+    attempts: 0
+  };
 
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    console.log(`Attempting to send OTP to: ${email}`);
+    
+    const mailOptions = {
+      from: `"Zoho Skill Update" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Your OTP Verification",
-      text: `Your OTP is ${otp}`,
+      subject: "Your OTP Verification Code",
+      text: `Your OTP verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Email Verification</h2>
+          <p>Your OTP verification code is:</p>
+          <h1 style="color: #4CAF50; font-size: 48px; letter-spacing: 5px;">${otp}</h1>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you didn't request this code, please ignore this email.</p>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log("✅ OTP sent successfully to:", email);
+    console.log("Message ID:", info.messageId);
+
+    res.json({ 
+      success: true,
+      message: "OTP sent successfully"
     });
-
-    console.log("OTP sent to:", email);
-
-    res.json({ success: true });
   } catch (err) {
-    console.error("CRITICAL EMAIL ERROR:", err);
+    console.error("❌ EMAIL ERROR:", err);
+    
+    // Remove OTP from store if sending failed
+    delete otpStore[email];
+    
     res.status(500).json({
       success: false,
-      error: err.message,
+      error: "Failed to send OTP. Please try again.",
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
+});
+
+/* ---------- VERIFY OTP ---------- */
+app.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({
+      success: false,
+      error: "Email and OTP required",
+    });
+  }
+
+  const storedData = otpStore[email];
+  
+  if (!storedData) {
+    return res.status(401).json({
+      success: false,
+      error: "No OTP found. Please request a new one.",
+    });
+  }
+
+  // Check if OTP has expired (10 minutes)
+  if (Date.now() - storedData.timestamp > 10 * 60 * 1000) {
+    delete otpStore[email];
+    return res.status(401).json({
+      success: false,
+      error: "OTP has expired. Please request a new one.",
+    });
+  }
+
+  // Check attempts
+  if (storedData.attempts >= 3) {
+    delete otpStore[email];
+    return res.status(401).json({
+      success: false,
+      error: "Too many attempts. Please request a new OTP.",
+    });
+  }
+
+  storedData.attempts += 1;
+
+  if (storedData.otp != otp) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid OTP. Please try again.",
+      attemptsLeft: 3 - storedData.attempts
+    });
+  }
+
+  // OTP verified successfully
+  delete otpStore[email];
+
+  res.json({
+    success: true,
+    message: "OTP verified successfully"
+  });
 });
 
 /* ---------- FETCH CONTACT ---------- */
@@ -116,10 +211,12 @@ app.post("/contact", async (req, res) => {
       });
     }
 
-    if (otpStore[email] != otp) {
+    // Verify OTP first
+    const storedData = otpStore[email];
+    if (!storedData || storedData.otp != otp) {
       return res.status(401).json({
         success: false,
-        error: "Invalid OTP",
+        error: "Invalid or expired OTP",
       });
     }
 
@@ -128,18 +225,19 @@ app.post("/contact", async (req, res) => {
     const token = await getAccessToken();
 
     const response = await axios.get(
-      `https://www.zohoapis.com/crm/v2/Contacts/search?email=${email}`,
+      `https://www.zohoapis.com/crm/v2/Contacts/search?email=${encodeURIComponent(email)}`,
       {
         headers: {
           Authorization: `Zoho-oauthtoken ${token}`,
         },
+        timeout: 10000 // 10 second timeout
       }
     );
 
     if (!response.data.data || response.data.data.length === 0) {
       return res.status(404).json({
         success: false,
-        error: "No contact found",
+        error: "No contact found with this email",
       });
     }
 
@@ -152,7 +250,7 @@ app.post("/contact", async (req, res) => {
     console.error("Fetch error:", err.response?.data || err.message);
     res.status(500).json({
       success: false,
-      error: "Fetch failed",
+      error: "Failed to fetch contact details",
     });
   }
 });
@@ -165,7 +263,14 @@ app.put("/contact", async (req, res) => {
     if (!id) {
       return res.status(400).json({
         success: false,
-        error: "ID required",
+        error: "Contact ID required",
+      });
+    }
+
+    if (!data || Object.keys(data).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Update data required",
       });
     }
 
@@ -179,7 +284,9 @@ app.put("/contact", async (req, res) => {
       {
         headers: {
           Authorization: `Zoho-oauthtoken ${token}`,
+          'Content-Type': 'application/json'
         },
+        timeout: 10000
       }
     );
 
@@ -192,14 +299,32 @@ app.put("/contact", async (req, res) => {
     console.error("Update error:", err.response?.data || err.message);
     res.status(500).json({
       success: false,
-      error: "Update failed",
+      error: "Failed to update contact",
     });
   }
+});
+
+/* ---------- ERROR HANDLING MIDDLEWARE ---------- */
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    error: "Internal server error"
+  });
 });
 
 /* ---------- START SERVER ---------- */
 const PORT = process.env.PORT || 9000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Not configured'}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Closing server...');
+  transporter.close();
+  process.exit(0);
 });
