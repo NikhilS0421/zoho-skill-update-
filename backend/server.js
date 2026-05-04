@@ -10,7 +10,7 @@ const app = express();
 
 /* ---------- MIDDLEWARE ---------- */
 app.use(cors({
-  origin: "https://zoho-skill-update.vercel.app", // 🔁 replace if your URL is different
+  origin: "https://zoho-skill-update.vercel.app",
   credentials: true
 }));
 
@@ -40,14 +40,18 @@ app.use((req, res, next) => {
 const otpStore = {};
 
 /* ---------- EMAIL SETUP ---------- */
+// Updated to a more robust configuration to prevent ETIMEDOUT on Render
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true, // use SSL
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // App Password
+    pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false // Helps with some cloud network restrictions
+  }
 });
 
 /* ---------- HEALTH CHECK ---------- */
@@ -81,10 +85,10 @@ app.post("/send-otp", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("CRITICAL EMAIL ERROR:", err); // This will now show in Render Logs
+    console.error("CRITICAL EMAIL ERROR:", err);
     res.status(500).json({
       success: false,
-      error: err.message, // This will now show in your browser Network tab!
+      error: err.message,
     });
   }
 });
