@@ -137,7 +137,7 @@ function App() {
       return;
     }
 
-    await fetch("https://zoho-form-app.onrender.com/send-otp", {
+    await fetch("http://localhost:9000/send-otp", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +155,7 @@ function App() {
       return;
     }
 
-    const res = await fetch("https://zoho-form-app.onrender.com/contact", {
+    const res = await fetch("http://localhost:9000/contact", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -253,7 +253,7 @@ function App() {
       ...editedData,
     };
 
-    await fetch("https://zoho-form-app.onrender.com/contact", {
+    await fetch("http://localhost:9000/contact", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
