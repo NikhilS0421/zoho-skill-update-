@@ -81,10 +81,10 @@ app.post("/send-otp", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Email error:", err);
+    console.error("CRITICAL EMAIL ERROR:", err); // This will now show in Render Logs
     res.status(500).json({
       success: false,
-      error: "Failed to send OTP",
+      error: err.message, // This will now show in your browser Network tab!
     });
   }
 });
