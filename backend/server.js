@@ -41,6 +41,7 @@ const otpStore = {};
 
 /* ---------- EMAIL SETUP ---------- */
 // Updated to a more robust configuration to prevent ETIMEDOUT on Render
+/* ---------- EMAIL SETUP ---------- */
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -49,12 +50,18 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false
-  },
-  // Force IPv4
-  connection: {
-    family: 4  // Force IPv4
+  // Connection timeout settings
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000
+});
+
+// Verify connection configuration on startup
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error('SMTP connection error:', error);
+  } else {
+    console.log('SMTP server is ready to take our messages');
   }
 });
 
