@@ -1,0 +1,592 @@
+import { useState } from "react";
+import "./App.css";
+import logo from "./assets/logo.png";
+
+/* CERT OPTIONS */
+const CERT_OPTIONS = [
+  "AWS Certified Advanced Networking – Specialty (ANS-C01)",
+  "AWS Certified Cloud Practitioner (CLF-C01)",
+  "AWS Certified Data Analytics – Specialty (DAS-C01)",
+  "AWS Certified Database – Specialty (DBS-C01)",
+  "AWS Certified DevOps Engineer – Professional (DOP-C01)",
+  "AWS Certified Developer – Associate (DVA-C01)",
+  "AWS Certified Machine Learning – Specialty (MLS-C01)",
+  "AWS Certified SAP on AWS – Specialty (PAS-C01)",
+  "AWS Certified Security – Specialty (SCS-C01)",
+  "AWS Certified Solutions Architect – Associate (SAA-C03)",
+  "AWS Certified Solutions Architect – Professional (SAP-C01)",
+  "AWS Certified SysOps Administrator – Associate (SOA-C02)",
+
+  "Certified Kubernetes Administrator (CKA)",
+  "Certified Kubernetes Application Developer (CKAD)",
+  "Certified Kubernetes Security Specialist (CKS)",
+  "Kubernetes and Cloud Native Associate (KCNA)",
+
+  "Google Associate Cloud Engineer",
+  "Google Cloud Digital Leader",
+  "Google Professional Cloud Architect",
+  "Google Professional Cloud Database Engineer",
+  "Google Professional Cloud DevOps Engineer",
+  "Google Professional Cloud Developer",
+  "Google Professional Cloud Network Engineer",
+  "Google Professional Cloud Security Engineer",
+  "Google Professional Data Engineer",
+  "Google Professional Machine Learning Engineer",
+
+  "VCTA - VMware Certified Technical Associate 2022",
+  "VCP - VMware Certified Professional 2022",
+  "VMware Certified Master Specialist - Cloud Native 2022",
+  "VMware Certified Specialist - vSphere with Tanzu 2022",
+  "VCTA - VMware Certified Technical Associate Security 2022",
+  "VMware Certified Professional - Endpoint and Workload Security 2022",
+  "VMware Carbon Black Cloud Audit and Remediation Skills 2022",
+  "VMware Carbon Black Cloud Enterprise EDR Skills 2022",
+  "VMware NSX-T Data Center Security 2022",
+  "VMware Carbon Black Cloud Endpoint Standard Skills 2022",
+  "VCAP - VMware Certified Advanced Professional 2022",
+  "VCDX - VMware Certified Design Expert 2022",
+  "VMware Specialist - Cloud Provider 2022",
+  "VMware Specialist - vRealize Operations 2022",
+  "VMware Specialist - Workspace ONE 21.X Advanced Integration 2022",
+  "VMware Workspace ONE for macOS 2022",
+  "VMware vRealize Operations - Cloud Management Automation 2022",
+  "VMware Certified Implementation Expert - Desktop Management 2022",
+  "VMware Certified Master Specialist - Digital Workspace 2022",
+  "VMware Specialist - Workspace ONE 21.X UEM Troubleshooting 2022",
+  "VMware Certified Implementation Expert - Cloud Management & Automation 2022",
+  "VMware Telco Cloud NFV Skills 2022",
+  "VMware Telco Cloud Practitioner Milestone 2022",
+  "VMware CloudHealth Platform Administrator - Associate (Azure)",
+  "VMware Telco Cloud Automation Skills 2022",
+  "VMware Telco Cloud Platform Specialist Skills 2022",
+  "VMware CloudHealth Platform Administrator - Associate (AWS)",
+  "VMware SD-WAN Foundations 2022",
+  "VMware SD-WAN Troubleshoot 2022",
+  "VMware Master Specialist - SD-WAN 2022",
+  "VMware Certified Implementation Expert - Network Virtualization 2022",
+  "VMware SD-WAN Design and Deploy 2022",
+  "VMware NSX Advanced Load Balancer (Avi) for Operators 2022",
+  "VMware Certified Specialist - vSAN 2022",
+  "Master Specialist - VMware Cloud on AWS 2022",
+  "VMware Certified Master Specialist - HCI 2022",
+  "VMware Certified Specialist - Cloud Foundation 2022",
+  "VMware Certified Implementation Expert - Data Center Virtualization 2022",
+
+  "Microsoft Certified: Azure Fundamentals",
+  "Microsoft Certified: Azure Administrator Associate",
+  "Microsoft Certified: Azure Developer Associate",
+  "Microsoft Certified: Azure Solutions Architect Expert",
+  "Microsoft Certified: Azure AI Engineer Associate",
+  "Microsoft Certified: Azure Data Scientist Associate",
+  "Microsoft Certified: Azure Security Engineer Associate",
+  "Microsoft Certified: Azure DevOps Engineer Expert",
+  "Microsoft Certified: Microsoft Azure IoT Developer Specialty",
+  "Microsoft Certified: Dynamics 365 for Sales Functional Consultant Associate",
+  "Microsoft Certified: Dynamics 365 for Customer Service Functional Consultant Associate",
+  "Microsoft 365 Certified Fundamentals",
+  "Microsoft 365 Certified: Messaging Administrator Associate",
+  "Microsoft 365 Certified: Teamwork Administrator Associate",
+  "Microsoft 365 Certified: Security Administrator Associate",
+  "Microsoft 365 Certified: Enterprise Administrator",
+  "Microsoft 365 Certified: Modern Desktop Administrator",
+
+  "Oracle Certified Professional Oracle Linux 8 System Administrator certification",
+
+  "CompTIA Linux+",
+  "LPIC 1 – Linux Administrator",
+  "LPIC 2 – Linux Engineer",
+  "LPIC 3 – 300 – Linux Enterprise Professional Certification",
+  "LFCS (Linux Foundation Certified System Administrator) certification",
+  "LFCE (Linux Foundation Certified Engineer) certification",
+  "RHCSA (Red Hat Certified System Administrator) certification",
+  "RHCE (Red Hat Certified Engineer) certification",
+  "RHCA (Red Hat Certified Architect) certification"
+];
+
+/* COUNTRY CODES */
+const COUNTRY_CODES = [
+  { code: "+91", label: "IND (+91)" },
+  { code: "+1", label: "USA (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+971", label: "UAE (+971)" },
+  { code: "+61", label: "AUS (+61)" },
+  { code: "+65", label: "SGP (+65)" },
+];
+
+/* 🔥 ADDED: COUNTRY LIST */
+const COUNTRY_LIST = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, North", "Korea, South", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "Spain", "Sri Lanka", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
+];
+
+function App() {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+
+  const [data, setData] = useState(null);
+  const [editedData, setEditedData] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [fileName, setFileName] = useState("");
+
+  const [isFetched, setIsFetched] = useState(false);
+  const [hasResume, setHasResume] = useState(null);
+
+  /* ---------- OTP ---------- */
+  const sendOTP = async () => {
+    if (!email) {
+      alert("Enter email first");
+      return;
+    }
+
+    await fetch("http://localhost:9000/send-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    alert("OTP sent to email");
+  };
+
+  /* ---------- FETCH ---------- */
+  const fetchData = async () => {
+    if (!email || !otp) {
+      alert("Enter email and OTP");
+      return;
+    }
+
+    const res = await fetch("http://localhost:9000/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      alert(result.error || "Invalid OTP");
+      return;
+    }
+
+    const fetched = result.data;
+
+    if (
+      fetched.Certification_s_Lists &&
+      typeof fetched.Certification_s_Lists === "string"
+    ) {
+      fetched.Certification_s_Lists =
+        fetched.Certification_s_Lists.split(",");
+    }
+
+    setData(fetched);
+    setIsFetched(true); 
+  };
+
+  /* ---------- CV UPLOAD ---------- */
+  const handleCVUpload = async (file) => {
+    if (!file) return;
+
+    setFileName(file.name);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(
+        "https://n8n.datacouch.io/webhook/parse-cv",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const raw = await res.text();
+
+      if (!raw || raw.trim() === "") {
+        alert("Empty response from parser");
+        return;
+      }
+
+      let result = JSON.parse(raw);
+
+      if (Array.isArray(result)) {
+        result = result[0];
+      }
+
+      if (!result.success || !result.data) {
+        alert("Parsing failed");
+        return;
+      }
+
+      setData((prev) => ({
+        ...(prev || {}),
+        ...(result.data || {}),
+      }));
+
+      setIsEditing(true);
+
+      alert("CV parsed & form filled");
+
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    }
+  };
+
+  /* ---------- CHANGE ---------- */
+  const handleChange = (field, value) => {
+    setEditedData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  /* ---------- UPDATE ---------- */
+  const updateContact = async () => {
+    const { id, ...rest } = data;
+
+    const finalData = {
+      Country_Code: data.Country_Code || "+91", 
+      ...rest,
+      ...editedData,
+    };
+
+    await fetch("http://localhost:9000/contact", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: data.id,
+        data: finalData,
+      }),
+    });
+
+    setData({ ...data, ...editedData });
+    setEditedData({});
+    setIsEditing(false);
+
+    alert("Updated successfully");
+  };
+
+  return (
+    <div className="page">
+      <div className="card">
+
+        <div className="cardHeader">
+          <img src={logo} alt="logo" className="logo" />
+          <h2 className="title centeredTitle">Instructor skill update</h2>
+        </div>
+
+        {!isFetched && (
+          <>
+            <div className="row">
+              <input
+                className="input"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button className="primaryBtn" onClick={sendOTP}>
+                Send OTP
+              </button>
+            </div>
+
+            <div className="row">
+              <input
+                className="input"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <button className="primaryBtn" onClick={fetchData}>
+                Get info
+              </button>
+            </div>
+          </>
+        )}
+
+        {isEditing && (
+          <div className="saveContainer">
+            <button className="primaryBtn" onClick={updateContact}>
+              Save Changes
+            </button>
+          </div>
+        )}
+
+        {data && (
+          <div style={{ marginTop: 20 }}>
+
+            <div className="row">
+              <label className="label">Do you have a resume?</label>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  className="primaryBtn"
+                  onClick={() => setHasResume(true)}
+                >
+                  Have Resume
+                </button>
+                <button
+                  className="primaryBtn"
+                  onClick={() => setHasResume(false)}
+                >
+                  Don’t Have Resume
+                </button>
+              </div>
+            </div>
+
+            {hasResume === true && (
+              <div className="row">
+                <label className="label">Upload CV</label>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="file"
+                    id="cvUpload"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleCVUpload(e.target.files[0])}
+                  />
+                  <button
+                    className="primaryBtn"
+                    onClick={() =>
+                      document.getElementById("cvUpload").click()
+                    }
+                  >
+                    Choose File
+                  </button>
+                  {fileName && (
+                    <span style={{ marginLeft: 10 }}>{fileName}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <Section title="Basic Info">
+              <Field label="Name" field="First_Name" {...props()} />
+              
+              <div className="fieldRow">
+                <label className="label">Phone</label>
+                <div style={{ display: "flex", gap: "8px", flex: 1 }}>
+                  <select
+                    className="input"
+                    style={{ flex: "0 0 100px" }}
+                    disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                    onChange={(e) => {
+                      setIsEditing(true);
+                      handleChange("Country_Code", e.target.value);
+                    }}
+                    value={editedData["Country_Code"] ?? data["Country_Code"] ?? "+91"}
+                  >
+                    {COUNTRY_CODES.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    className="input"
+                    placeholder="Phone number"
+                    value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
+                    disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                    onChange={(e) => {
+                      setIsEditing(true);
+                      handleChange("Mobile", e.target.value);
+                    }}
+                  />
+                </div>
+              </div>
+
+              <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()} />
+              <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
+              <Field label="Designation" field="Designation" {...props()} />
+            </Section>
+
+            {/* 🔥 ADDED: Location Section */}
+            <Section title="Location">
+              <div className="fieldRow">
+                <label className="label">Country</label>
+                <select
+                  className="input"
+                  value={editedData["Country"] ?? data["Country"] ?? ""}
+                  onChange={(e) => {
+                    setIsEditing(true);
+                    handleChange("Country", e.target.value);
+                  }}
+                >
+                  <option value="">Select Country</option>
+                  {COUNTRY_LIST.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <Field label="Mailing State" field="Mailing_State" {...props()} />
+            </Section>
+
+            <Section title="Experience">
+              <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
+              <TextAreaField label="Training" field="Training_Experience" {...props()} />
+            </Section>
+
+            <Section title="Skills & Certifications">
+              <TextAreaField label="Skills" field="Ins_skills" {...props()} />
+
+              <MultiSelectField
+                label="Certification(s)"
+                field="Certification_s_Lists"
+                {...props()}
+              />
+
+              <TextAreaField label="Other Certification" field="Certification" {...props()} />
+            </Section>
+
+            <div className="fieldRow">
+              <label className="label">Email</label>
+              <input className="input" value={data.Email || ""} disabled />
+            </div>
+
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  function props() {
+    return {
+      data,
+      editedData,
+      handleChange,
+      setIsEditing,
+    };
+  }
+}
+
+/* ---------- COMPONENTS ---------- */
+
+const Section = ({ title, children }) => (
+  <div className="section">
+    <h4>{title}</h4>
+    {children}
+  </div>
+);
+
+const Field = ({ label, field, type, data, editedData, handleChange, setIsEditing }) => {
+  const originalValue = data[field];
+  const value = editedData[field] ?? originalValue ?? "";
+
+  const basicFields = ["First_Name", "Mobile", "LinkedIn_URL"];
+
+  const isDisabled =
+    basicFields.includes(field) &&
+    originalValue &&
+    originalValue.toString().trim() !== "";
+
+  return (
+    <div className="fieldRow">
+      <label className="label">{label}</label>
+      {type === "checkbox" ? (
+        <input
+          type="checkbox"
+          style={{ width: "20px", height: "20px", cursor: "pointer" }}
+          checked={value === true || value === "true" || value === "Yes" || value === "yes"}
+          onChange={(e) => {
+            setIsEditing(true);
+            handleChange(field, e.target.checked);
+          }}
+        />
+      ) : (
+        <input
+          className="input"
+          value={value}
+          disabled={isDisabled}
+          onChange={(e) => {
+            setIsEditing(true);
+            handleChange(field, e.target.value);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing }) => {
+  const value = editedData[field] ?? data[field] ?? "";
+
+  return (
+    <div className="fieldRow">
+      <label className="label">{label}</label>
+      <textarea
+        className="textarea"
+        value={value}
+        onChange={(e) => {
+          setIsEditing(true);
+          handleChange(field, e.target.value);
+        }}
+      />
+    </div>
+  );
+};
+
+/* SEARCH DROPDOWN */
+const MultiSelectField = ({
+  label,
+  field,
+  data,
+  editedData,
+  handleChange,
+  setIsEditing,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const selected = editedData[field] ?? data[field] ?? [];
+
+  const filteredOptions = CERT_OPTIONS.filter((opt) =>
+    opt.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="fieldRow">
+      <label className="label">{label}</label>
+
+      <div className="dropdownContainer">
+        <div className="dropdownHeader" onClick={() => setOpen(!open)}>
+          {selected.join(", ")}
+        </div>
+
+        {open && (
+          <div className="dropdownList">
+            <input
+              className="input"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            {filteredOptions.map((opt) => (
+              <div
+                key={opt}
+                className={`dropdownItem ${
+                  selected.includes(opt) ? "selected" : ""
+                }`}
+                onClick={() => {
+                  const updated = selected.includes(opt)
+                    ? selected.filter((o) => o !== opt)
+                    : [...selected, opt];
+
+                  setIsEditing(true);
+                  handleChange(field, updated);
+                }}
+              >
+                {opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
