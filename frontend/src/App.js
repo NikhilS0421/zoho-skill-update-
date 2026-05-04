@@ -137,7 +137,7 @@ function App() {
       return;
     }
 
-    await fetch("https://zoho-skill-update.onrender.com/send-otp", {
+    await fetch(`${process.env.REACT_APP_API_URL}/send-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +155,7 @@ function App() {
       return;
     }
 
-    const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -253,7 +253,7 @@ function App() {
       ...editedData,
     };
 
-    await fetch("https://zoho-skill-update.onrender.com/contact", {
+    await fetch(`${process.env.REACT_APP_API_URL}/contact`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
