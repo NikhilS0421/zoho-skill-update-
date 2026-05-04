@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const dns = require('dns');
-const net = require('net');
 require("dotenv").config();
 
 const nodemailer = require("nodemailer");
@@ -41,8 +40,8 @@ app.use((req, res, next) => {
 /* ---------- OTP STORE ---------- */
 const otpStore = {};
 
-/* ---------- EMAIL SETUP WITH IPv4 FORCE ---------- */
-// Force IPv4 for DNS resolution
+/* ---------- EMAIL SETUP - FORCE IPv4 ---------- */
+// This is the correct way to force IPv4
 dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
@@ -53,21 +52,18 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  // Custom connection handling to force IPv4
-  customConnections: true,
-  connection: {
-    lookup: (hostname, options, callback) => {
-      // Force IPv4 lookup
-      dns.lookup(hostname, { family: 4 }, callback);
-    }
-  }
+  tls: {
+    // Do not fail on invalid certs
+    rejectUnauthorized: false
+  },
+  logger: true,
+  debug: true // Enable debug logs
 });
 
 // Verify connection on startup
 transporter.verify(function (error, success) {
   if (error) {
-    console.error('SMTP connection error:', error);
-    console.log('Attempting alternative connection method...');
+    console.error('❌ SMTP connection error:', error.message);
   } else {
     console.log('✅ SMTP server is ready to take our messages');
   }
@@ -78,7 +74,8 @@ app.get("/", (req, res) => {
   res.json({ 
     message: "Backend running ✅",
     emailConfigured: !!process.env.EMAIL_USER,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    nodeVersion: process.version
   });
 });
 
@@ -101,7 +98,7 @@ app.post("/send-otp", async (req, res) => {
   };
 
   try {
-    console.log(`Attempting to send OTP to: ${email}`);
+    console.log(`📧 Attempting to send OTP to: ${email}`);
     
     const mailOptions = {
       from: `"Zoho Skill Update" <${process.env.EMAIL_USER}>`,
@@ -114,7 +111,7 @@ app.post("/send-otp", async (req, res) => {
           <p>Your OTP verification code is:</p>
           <h1 style="color: #4CAF50; font-size: 48px; letter-spacing: 5px;">${otp}</h1>
           <p>This code will expire in 10 minutes.</p>
-          <p>If you didn't request this code, please ignore this email.</p>
+          <p style="color: #666; font-size: 12px;">If you didn't request this code, please ignore this email.</p>
         </div>
       `
     };
@@ -134,10 +131,18 @@ app.post("/send-otp", async (req, res) => {
     // Remove OTP from store if sending failed
     delete otpStore[email];
     
+    // More detailed error response
+    let errorMessage = "Failed to send OTP. Please try again.";
+    if (err.code === 'ENETUNREACH') {
+      errorMessage = "Network connectivity issue. Please try again later.";
+    } else if (err.code === 'EAUTH') {
+      errorMessage = "Email authentication failed. Please contact support.";
+    }
+    
     res.status(500).json({
       success: false,
-      error: "Failed to send OTP. Please try again.",
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      error: errorMessage,
+      code: err.code
     });
   }
 });
@@ -220,7 +225,8 @@ app.post("/contact", async (req, res) => {
       });
     }
 
-    delete otpStore[email];
+    // Don't delete OTP yet - keep it for retries
+    // delete otpStore[email]; // Removed this line
 
     const token = await getAccessToken();
 
@@ -230,7 +236,7 @@ app.post("/contact", async (req, res) => {
         headers: {
           Authorization: `Zoho-oauthtoken ${token}`,
         },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000
       }
     );
 
@@ -240,6 +246,9 @@ app.post("/contact", async (req, res) => {
         error: "No contact found with this email",
       });
     }
+
+    // Now delete OTP after successful fetch
+    delete otpStore[email];
 
     res.json({
       success: true,
@@ -320,11 +329,12 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Not configured'}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🟢 Node.js version: ${process.version}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Closing server...');
+  console.log('SIGTERM received. Closing gracefully...');
   transporter.close();
   process.exit(0);
 });
