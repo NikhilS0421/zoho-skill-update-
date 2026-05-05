@@ -427,6 +427,7 @@ function App() {
             <Section title="Experience">
               <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
               <TextAreaField label="Training" field="Training_Experience" {...props()} />
+              <TextAreaField label="Business Domain" field="Business_Domain" {...props()} />
             </Section>
 
             <Section title="Skills & Certifications">
