@@ -253,7 +253,7 @@ function App() {
       ...editedData,
     };
 
-    await fetch("http://localhost:9000/contact", {
+    await fetch("https://zoho-skill-update.onrender.com/contact", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
