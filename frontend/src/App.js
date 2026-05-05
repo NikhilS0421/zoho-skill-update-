@@ -321,7 +321,7 @@ function App() {
 
             <div className="row">
               <label className="label">Do you have a resume?</label>
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div className="btnGroup" style={{ display: "flex", gap: "10px" }}>
                 <button
                   className="primaryBtn"
                   onClick={() => setHasResume(true)}
@@ -340,7 +340,7 @@ function App() {
             {hasResume === true && (
               <div className="row">
                 <label className="label">Upload CV</label>
-                <div style={{ flex: 1 }}>
+                <div className="fileUploadArea">
                   <input
                     type="file"
                     id="cvUpload"
@@ -367,7 +367,7 @@ function App() {
               
               <div className="fieldRow">
                 <label className="label">Phone</label>
-                <div style={{ display: "flex", gap: "8px", flex: 1 }}>
+                <div className="phoneInputGroup" style={{ display: "flex", gap: "8px", flex: 1 }}>
                   <select
                     className="input"
                     style={{ flex: "0 0 100px" }}

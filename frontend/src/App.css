@@ -257,6 +257,99 @@ input[type="file"] {
     flex-direction: column;
   }
 }
+
+@media (max-width: 480px) {
+  .page {
+    padding: 16px 10px;
+    align-items: flex-start;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  /* Stack logo above title on small screens */
+  .cardHeader {
+    height: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+
+  .logo {
+    position: static;
+    height: 36px;
+  }
+
+  .centeredTitle {
+    font-size: 17px;
+    width: 100%;
+  }
+
+  /* Stack label above input */
+  .fieldRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .label {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  /* Inputs stretch full width */
+  .input,
+  .textarea,
+  .dropdownContainer {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Buttons stretch full width */
+  .primaryBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Button groups wrap instead of overflow */
+  .btnGroup {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .btnGroup .primaryBtn {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 120px;
+  }
+
+  /* Phone row — country code + number side by side still */
+  .phoneInputGroup {
+    width: 100%;
+  }
+
+  /* Save button full width */
+  .saveContainer {
+    justify-content: stretch;
+  }
+
+  .saveContainer .primaryBtn {
+    width: 100%;
+  }
+
+  /* File upload row */
+  .fileUploadArea {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fileUploadArea .primaryBtn {
+    width: 100%;
+  }
+}
 /* Fixed width for OTP/Profile buttons to prevent jumping/enlarging */
 .actionBtn {
   min-width: 120px; /* Adjust based on your longest text */
