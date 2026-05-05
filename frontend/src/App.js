@@ -253,7 +253,7 @@ function App() {
       ...editedData,
     };
 
-    await fetch("https://zoho-skill-update.onrender.com/contact", {
+    await fetch("http://localhost:9000/contact", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -321,7 +321,7 @@ function App() {
 
             <div className="row">
               <label className="label">Do you have a resume?</label>
-              <div className="btnGroup" style={{ display: "flex", gap: "10px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   className="primaryBtn"
                   onClick={() => setHasResume(true)}
@@ -340,7 +340,7 @@ function App() {
             {hasResume === true && (
               <div className="row">
                 <label className="label">Upload CV</label>
-                <div className="fileUploadArea">
+                <div style={{ flex: 1 }}>
                   <input
                     type="file"
                     id="cvUpload"
@@ -367,7 +367,7 @@ function App() {
               
               <div className="fieldRow">
                 <label className="label">Phone</label>
-                <div className="phoneInputGroup" style={{ display: "flex", gap: "8px", flex: 1 }}>
+                <div style={{ display: "flex", gap: "8px", flex: 1 }}>
                   <select
                     className="input"
                     style={{ flex: "0 0 100px" }}
@@ -424,10 +424,9 @@ function App() {
               <Field label="Mailing State" field="Mailing_State" {...props()} />
             </Section>
 
-            <Section title="Describe Your Experience">
+            <Section title="Experience">
               <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
               <TextAreaField label="Training" field="Training_Experience" {...props()} />
-              <TextAreaField label="Business Domain" field="Business_Domain" {...props()} />
             </Section>
 
             <Section title="Skills & Certifications">
