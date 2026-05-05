@@ -424,7 +424,7 @@ function App() {
               <Field label="Mailing State" field="Mailing_State" {...props()} />
             </Section>
 
-            <Section title="Experience">
+            <Section title="Describe Your Experience">
               <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
               <TextAreaField label="Training" field="Training_Experience" {...props()} />
               <TextAreaField label="Business Domain" field="Business_Domain" {...props()} />
