@@ -103,6 +103,31 @@ const CERT_OPTIONS = [
   "RHCA (Red Hat Certified Architect) certification"
 ];
 
+/* BUSINESS DOMAIN OPTIONS */
+const BUSINESS_DOMAIN_OPTIONS = [
+  "Finance",
+  "Insurance",
+  "Banking",
+  "Retail",
+  "Fintech",
+  "Manufacturing",
+  "Telecommunications",
+  "Healthcare, Life Sciences, & Pharma",
+  "Energy (ONG)",
+  "eCommerce",
+  "Travel & Hospitality",
+  "Education",
+  "Technology",
+  "Agriculture/Agritech",
+  "Marketing/Sales",
+  "CRM",
+  "Automotive",
+  "Real Estate/Construction",
+  "Supply Chain",
+  "Private Equity",
+  "Others",
+];
+
 /* COUNTRY CODES */
 const COUNTRY_CODES = [
   { code: "+91", label: "IND (+91)" },
@@ -177,7 +202,7 @@ function App() {
       typeof fetched.Certification_s_Lists === "string"
     ) {
       fetched.Certification_s_Lists =
-        fetched.Certification_s_Lists.split(",");
+        fetched.Certification_s_Lists.split(",").map((s) => s.trim());
     }
 
     setData(fetched);
@@ -245,24 +270,23 @@ function App() {
 
   /* ---------- UPDATE ---------- */
   const updateContact = async () => {
-    const { id, ...rest } = data;
-
-    const finalData = {
-      Country_Code: data.Country_Code || "+91", 
-      ...rest,
-      ...editedData,
-    };
-
-    await fetch("https://zoho-skill-update.onrender.com/contact", {
+    const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id: data.id,
-        data: finalData,
+        data: editedData,
       }),
     });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      alert("Update failed: " + (result.error || "Unknown error"));
+      return;
+    }
 
     setData({ ...data, ...editedData });
     setEditedData({});
@@ -317,11 +341,11 @@ function App() {
         )}
 
         {data && (
-          <div style={{ marginTop: 20 }}>
+          <div className="dataContainer">
 
             <div className="row">
               <label className="label">Do you have a resume?</label>
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div className="btnGroup">
                 <button
                   className="primaryBtn"
                   onClick={() => setHasResume(true)}
@@ -340,7 +364,7 @@ function App() {
             {hasResume === true && (
               <div className="row">
                 <label className="label">Upload CV</label>
-                <div style={{ flex: 1 }}>
+                <div className="fileUploadArea">
                   <input
                     type="file"
                     id="cvUpload"
@@ -356,7 +380,7 @@ function App() {
                     Choose File
                   </button>
                   {fileName && (
-                    <span style={{ marginLeft: 10 }}>{fileName}</span>
+                    <span className="fileName">{fileName}</span>
                   )}
                 </div>
               </div>
@@ -367,10 +391,9 @@ function App() {
               
               <div className="fieldRow">
                 <label className="label">Phone</label>
-                <div style={{ display: "flex", gap: "8px", flex: 1 }}>
+                <div className="phoneInputGroup">
                   <select
-                    className="input"
-                    style={{ flex: "0 0 100px" }}
+                    className="input countryCodeSelect"
                     disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
                     onChange={(e) => {
                       setIsEditing(true);
@@ -398,6 +421,25 @@ function App() {
               <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()} />
               <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
               <Field label="Designation" field="Designation" {...props()} />
+
+              <div className="fieldRow">
+                <label className="label">Business Domain</label>
+                <select
+                  className="input"
+                  value={editedData["Business_Domain"] ?? data["Business_Domain"] ?? ""}
+                  onChange={(e) => {
+                    setIsEditing(true);
+                    handleChange("Business_Domain", e.target.value);
+                  }}
+                >
+                  <option value="">Select Domain</option>
+                  {BUSINESS_DOMAIN_OPTIONS.map((domain) => (
+                    <option key={domain} value={domain}>
+                      {domain}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </Section>
 
             {/* 🔥 ADDED: Location Section */}

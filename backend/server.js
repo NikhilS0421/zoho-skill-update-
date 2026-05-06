@@ -121,9 +121,20 @@ app.put("/contact", async (req, res) => {
       { headers: { Authorization: `Zoho-oauthtoken ${token}` } }
     );
 
+    const zohoResult = response.data?.data?.[0];
+    if (zohoResult?.status === "error") {
+      console.error("Zoho rejected update:", JSON.stringify(zohoResult));
+      return res.status(400).json({ success: false, error: zohoResult.message || zohoResult.code });
+    }
+
     res.json({ success: true, data: response.data });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Update failed" });
+    const zohoError = err.response?.data;
+    console.error("Zoho update error:", JSON.stringify(zohoError || err.message));
+    res.status(500).json({
+      success: false,
+      error: zohoError?.message || zohoError?.code || "Update failed",
+    });
   }
 });
 

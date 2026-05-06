@@ -18,16 +18,18 @@
   padding: 40px 20px;
   background: linear-gradient(135deg, #eef2ff, #f8fafc);
   font-family: "Inter", "Segoe UI", sans-serif;
+  box-sizing: border-box;
 }
 
 /* ---------- Card ---------- */
 .card {
-  width: 640px;
+  width: 100%;
+  max-width: 640px;
   background: var(--card-bg);
   padding: 28px;
   border-radius: 16px;
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-  transition: 0.3s ease;
+  box-sizing: border-box;
 }
 
 .card:hover {
@@ -44,14 +46,12 @@
   border-bottom: 1px solid #eee;
 }
 
-/* Logo */
 .logo {
   height: 45px;
   position: absolute;
   left: 0;
 }
 
-/* Title Center */
 .centeredTitle {
   width: 100%;
   text-align: center;
@@ -60,11 +60,18 @@
   color: var(--text);
 }
 
+/* ---------- Data container ---------- */
+.dataContainer {
+  margin-top: 20px;
+}
+
 /* ---------- Row ---------- */
 .row {
   display: flex;
+  align-items: center;
   gap: 12px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
 /* ---------- Field Row ---------- */
@@ -78,39 +85,32 @@
 /* ---------- Label ---------- */
 .label {
   width: 180px;
+  min-width: 180px;
   font-weight: 500;
   color: var(--subtext);
+  font-size: 14px;
 }
 
 /* ---------- Inputs ---------- */
 .input,
 .textarea {
   flex: 1;
+  min-width: 0;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
   font-size: 14px;
   background: #fff;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-/* ---------- File Input (NEW) ---------- */
-input[type="file"] {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px dashed var(--border);
-  background: #f9fafb;
-  cursor: pointer;
-}
-
-/* ---------- Textarea ---------- */
 .textarea {
   min-height: 80px;
   resize: vertical;
 }
 
-/* ---------- Focus ---------- */
 .input:focus,
 .textarea:focus {
   outline: none;
@@ -118,12 +118,24 @@ input[type="file"] {
   box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.15);
 }
 
-/* ---------- Disabled ---------- */
 .input:disabled,
 .textarea:disabled {
   background: #f3f4f6;
   color: #9ca3af;
   cursor: not-allowed;
+}
+
+/* ---------- Phone input group ---------- */
+.phoneInputGroup {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.countryCodeSelect {
+  flex: 0 0 110px;
+  width: 110px;
 }
 
 /* ---------- Button ---------- */
@@ -135,6 +147,8 @@ input[type="file"] {
   border-radius: 10px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
   transition: 0.2s ease;
 }
 
@@ -143,17 +157,27 @@ input[type="file"] {
   transform: translateY(-1px);
 }
 
-/* ---------- Icon ---------- */
-.icon {
-  cursor: pointer;
-  color: #9ca3af;
-  font-size: 16px;
-  transition: 0.2s ease;
+/* ---------- Button group (resume buttons) ---------- */
+.btnGroup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
 }
 
-.icon:hover {
-  color: var(--primary);
-  transform: scale(1.15);
+/* ---------- File upload ---------- */
+.fileUploadArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.fileName {
+  font-size: 13px;
+  color: var(--subtext);
+  word-break: break-all;
 }
 
 /* ---------- Section ---------- */
@@ -163,32 +187,31 @@ input[type="file"] {
   border-radius: 12px;
   background: #f9fafb;
   border: 1px solid var(--border);
-  transition: 0.2s;
 }
 
 .section:hover {
   background: #f3f4f6;
 }
 
-/* ---------- Section Title ---------- */
 .section h4 {
-  margin-bottom: 10px;
+  margin: 0 0 10px 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
 }
 
-/* ---------- Save Button ---------- */
+/* ---------- Save button ---------- */
 .saveContainer {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 10px;
 }
 
-/* ---------- DROPDOWN ---------- */
+/* ---------- Dropdown ---------- */
 .dropdownContainer {
   position: relative;
   flex: 1;
+  min-width: 0;
 }
 
 .dropdownHeader {
@@ -200,14 +223,13 @@ input[type="file"] {
   min-height: 40px;
   display: flex;
   align-items: center;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.dropdownHeader.disabled {
-  background: #f3f4f6;
-  cursor: not-allowed;
-}
-
-/* Dropdown */
 .dropdownList {
   position: absolute;
   top: 105%;
@@ -222,146 +244,33 @@ input[type="file"] {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* Item */
 .dropdownItem {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 13px;
 }
 
-/* Hover */
 .dropdownItem:hover {
   background: #eef2ff;
 }
 
-/* Selected */
 .dropdownItem.selected {
   background: #dbeafe;
   font-weight: 500;
   color: #1e40af;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 768px) {
-  .card {
-    width: 100%;
-    padding: 20px;
-  }
-
-  .label {
-    width: 120px;
-    font-size: 13px;
-  }
-
-  .row {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .page {
-    padding: 16px 10px;
-    align-items: flex-start;
-  }
-
-  .card {
-    padding: 16px;
-    border-radius: 12px;
-  }
-
-  /* Stack logo above title on small screens */
-  .cardHeader {
-    height: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding-bottom: 14px;
-  }
-
-  .logo {
-    position: static;
-    height: 36px;
-  }
-
-  .centeredTitle {
-    font-size: 17px;
-    width: 100%;
-  }
-
-  /* Stack label above input */
-  .fieldRow {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .label {
-    width: 100%;
-    margin-bottom: 2px;
-  }
-
-  /* Inputs stretch full width */
-  .input,
-  .textarea,
-  .dropdownContainer {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Buttons stretch full width */
-  .primaryBtn {
-    width: 100%;
-    text-align: center;
-  }
-
-  /* Button groups wrap instead of overflow */
-  .btnGroup {
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .btnGroup .primaryBtn {
-    flex: 1 1 calc(50% - 5px);
-    min-width: 120px;
-  }
-
-  /* Phone row — country code + number side by side still */
-  .phoneInputGroup {
-    width: 100%;
-  }
-
-  /* Save button full width */
-  .saveContainer {
-    justify-content: stretch;
-  }
-
-  .saveContainer .primaryBtn {
-    width: 100%;
-  }
-
-  /* File upload row */
-  .fileUploadArea {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .fileUploadArea .primaryBtn {
-    width: 100%;
-  }
-}
-/* Fixed width for OTP/Profile buttons to prevent jumping/enlarging */
+/* ---------- Input group helpers ---------- */
 .actionBtn {
-  min-width: 120px; /* Adjust based on your longest text */
+  min-width: 120px;
   max-width: 120px;
   justify-content: center;
   display: flex;
 }
 
-/* Container for the input groups */
 .inputGroup {
   display: flex;
-  align-items: flex-start; /* Keeps items aligned even with sub-text */
+  align-items: flex-start;
   gap: 12px;
   width: 100%;
 }
@@ -377,4 +286,169 @@ input[type="file"] {
   font-size: 12px;
   margin-top: 4px;
   margin-left: 4px;
+}
+
+/* =============================================
+   TABLET  (≤ 768px)
+   ============================================= */
+@media (max-width: 768px) {
+  .page {
+    padding: 24px 16px;
+  }
+
+  .card {
+    padding: 22px 18px;
+  }
+
+  .label {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .centeredTitle {
+    font-size: 19px;
+  }
+
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .row .input {
+    min-width: 0;
+  }
+
+  .countryCodeSelect {
+    flex: 0 0 100px;
+    width: 100px;
+  }
+}
+
+/* =============================================
+   MOBILE  (≤ 480px)
+   ============================================= */
+@media (max-width: 480px) {
+  .page {
+    padding: 12px 10px;
+  }
+
+  .card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  /* Header: stack logo above title */
+  .cardHeader {
+    height: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+  }
+
+  .logo {
+    position: static;
+    height: 36px;
+  }
+
+  .centeredTitle {
+    font-size: 17px;
+  }
+
+  /* OTP / email rows: stack vertically */
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row .input,
+  .row .primaryBtn {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Resume button group: side by side, wrap if needed */
+  .btnGroup {
+    width: 100%;
+  }
+
+  .btnGroup .primaryBtn {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  /* File upload */
+  .fileUploadArea {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fileUploadArea .primaryBtn {
+    width: 100%;
+  }
+
+  /* Stack label above field */
+  .fieldRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .label {
+    width: 100%;
+    min-width: unset;
+    margin-bottom: 2px;
+  }
+
+  .input,
+  .textarea,
+  .dropdownContainer {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Phone: keep country code + number side by side */
+  .phoneInputGroup {
+    width: 100%;
+  }
+
+  .countryCodeSelect {
+    flex: 0 0 95px;
+    width: 95px;
+  }
+
+  /* Save button full width */
+  .saveContainer {
+    justify-content: stretch;
+  }
+
+  .saveContainer .primaryBtn {
+    width: 100%;
+  }
+
+  .actionBtn {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+  }
+}
+
+/* =============================================
+   SMALL PHONES  (≤ 360px)
+   ============================================= */
+@media (max-width: 360px) {
+  .card {
+    padding: 12px 10px;
+  }
+
+  .centeredTitle {
+    font-size: 15px;
+  }
+
+  .primaryBtn {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+
+  .section {
+    padding: 12px 10px;
+  }
 }
