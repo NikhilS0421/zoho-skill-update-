@@ -422,24 +422,11 @@ function App() {
               <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
               <Field label="Designation" field="Designation" {...props()} />
 
-              <div className="fieldRow">
-                <label className="label">Business Domain</label>
-                <select
-                  className="input"
-                  value={editedData["Business_Domain"] ?? data["Business_Domain"] ?? ""}
-                  onChange={(e) => {
-                    setIsEditing(true);
-                    handleChange("Business_Domain", e.target.value);
-                  }}
-                >
-                  <option value="">Select Domain</option>
-                  {BUSINESS_DOMAIN_OPTIONS.map((domain) => (
-                    <option key={domain} value={domain}>
-                      {domain}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <BusinessDomainField
+                label="Business Domain"
+                field="Business_Domain"
+                {...props()}
+              />
             </Section>
 
             {/* 🔥 ADDED: Location Section */}
@@ -617,6 +604,55 @@ const MultiSelectField = ({
                     ? selected.filter((o) => o !== opt)
                     : [...selected, opt];
 
+                  setIsEditing(true);
+                  handleChange(field, updated);
+                }}
+              >
+                {opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* BUSINESS DOMAIN DROPDOWN */
+const BusinessDomainField = ({ label, field, data, editedData, handleChange, setIsEditing }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const selected = editedData[field] ?? data[field] ?? [];
+  const selectedArr = Array.isArray(selected) ? selected : selected ? [selected] : [];
+
+  const filtered = BUSINESS_DOMAIN_OPTIONS.filter((opt) =>
+    opt.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="fieldRow">
+      <label className="label">{label}</label>
+      <div className="dropdownContainer">
+        <div className="dropdownHeader" onClick={() => setOpen(!open)}>
+          {selectedArr.join(", ") || "Select Domain"}
+        </div>
+        {open && (
+          <div className="dropdownList">
+            <input
+              className="input"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {filtered.map((opt) => (
+              <div
+                key={opt}
+                className={`dropdownItem ${selectedArr.includes(opt) ? "selected" : ""}`}
+                onClick={() => {
+                  const updated = selectedArr.includes(opt)
+                    ? selectedArr.filter((o) => o !== opt)
+                    : [...selectedArr, opt];
                   setIsEditing(true);
                   handleChange(field, updated);
                 }}
