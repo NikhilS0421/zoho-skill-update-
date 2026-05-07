@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./App.css";
 import logo from "./assets/logo.png";
 
@@ -568,6 +568,17 @@ const MultiSelectField = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const selected = editedData[field] ?? data[field] ?? [];
 
@@ -579,7 +590,7 @@ const MultiSelectField = ({
     <div className="fieldRow">
       <label className="label">{label}</label>
 
-      <div className="dropdownContainer">
+      <div className="dropdownContainer" ref={ref}>
         <div className="dropdownHeader" onClick={() => setOpen(!open)}>
           {selected.join(", ")}
         </div>
@@ -622,6 +633,17 @@ const MultiSelectField = ({
 const BusinessDomainField = ({ label, field, data, editedData, handleChange, setIsEditing }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const selected = editedData[field] ?? data[field] ?? [];
   const selectedArr = Array.isArray(selected) ? selected : selected ? [selected] : [];
@@ -633,7 +655,7 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
   return (
     <div className="fieldRow">
       <label className="label">{label}</label>
-      <div className="dropdownContainer">
+      <div className="dropdownContainer" ref={ref}>
         <div className="dropdownHeader" onClick={() => setOpen(!open)}>
           {selectedArr.join(", ") || "Select Domain"}
         </div>
