@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
-import logo from "./assets/logo.png";
+import logo from "frontend/src/assets/Untitled design.svg";
 
 /* CERT OPTIONS */
 const CERT_OPTIONS = [
