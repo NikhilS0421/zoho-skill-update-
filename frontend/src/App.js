@@ -334,14 +334,6 @@ function App() {
             </>
           )}
 
-          {isEditing && (
-            <div className="saveContainer">
-              <button className="primaryBtn" onClick={updateContact}>
-                Save Changes
-              </button>
-            </div>
-          )}
-
           {data && (
             <div className="dataContainer">
 
@@ -454,7 +446,7 @@ function App() {
                 <Field label="Mailing State" field="Mailing_State" {...props()} />
               </Section>
 
-              <Section title="Experience">
+              <Section title="Describe Your Experience">
                 <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
                 <TextAreaField label="Training" field="Training_Experience" {...props()} />
               </Section>
@@ -475,6 +467,14 @@ function App() {
                 <label className="label">Email</label>
                 <input className="input" value={data.Email || ""} disabled />
               </div>
+
+              {isEditing && (
+                <div className="saveContainer">
+                  <button className="primaryBtn" onClick={updateContact}>
+                    Save Changes
+                  </button>
+                </div>
+              )}
 
             </div>
           )}
