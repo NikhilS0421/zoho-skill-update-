@@ -301,182 +301,185 @@ function App() {
 
         <div className="cardHeader">
           <img src={logo} alt="logo" className="logo" />
-          <h2 className="title centeredTitle">Instructor skill update</h2>
+          <h2 className="title centeredTitle">Instructor Skill Update</h2>
         </div>
 
-        {!isFetched && (
-          <>
-            <div className="row">
-              <input
-                className="input"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <button className="primaryBtn" onClick={sendOTP}>
-                Send OTP
-              </button>
-            </div>
+        <div className="cardBody">
 
-            <div className="row">
-              <input
-                className="input"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-              <button className="primaryBtn" onClick={fetchData}>
-                Get info
-              </button>
-            </div>
-          </>
-        )}
-
-        {isEditing && (
-          <div className="saveContainer">
-            <button className="primaryBtn" onClick={updateContact}>
-              Save Changes
-            </button>
-          </div>
-        )}
-
-        {data && (
-          <div className="dataContainer">
-
-            <div className="row">
-              <label className="label">Do you have a resume?</label>
-              <div className="btnGroup">
-                <button
-                  className="primaryBtn"
-                  onClick={() => setHasResume(true)}
-                >
-                  Have Resume
-                </button>
-                <button
-                  className="primaryBtn"
-                  onClick={() => setHasResume(false)}
-                >
-                  Don’t Have Resume
+          {!isFetched && (
+            <>
+              <div className="row">
+                <input
+                  className="input"
+                  placeholder="Enter email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button className="primaryBtn" onClick={sendOTP}>
+                  Send OTP
                 </button>
               </div>
-            </div>
 
-            {hasResume === true && (
               <div className="row">
-                <label className="label">Upload CV</label>
-                <div className="fileUploadArea">
-                  <input
-                    type="file"
-                    id="cvUpload"
-                    style={{ display: "none" }}
-                    onChange={(e) => handleCVUpload(e.target.files[0])}
-                  />
+                <input
+                  className="input"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+                <button className="primaryBtn" onClick={fetchData}>
+                  Get Info
+                </button>
+              </div>
+            </>
+          )}
+
+          {isEditing && (
+            <div className="saveContainer">
+              <button className="primaryBtn" onClick={updateContact}>
+                Save Changes
+              </button>
+            </div>
+          )}
+
+          {data && (
+            <div className="dataContainer">
+
+              <div className="row">
+                <label className="label">Do you have a resume?</label>
+                <div className="btnGroup">
                   <button
                     className="primaryBtn"
-                    onClick={() =>
-                      document.getElementById("cvUpload").click()
-                    }
+                    onClick={() => setHasResume(true)}
                   >
-                    Choose File
+                    Have Resume
                   </button>
-                  {fileName && (
-                    <span className="fileName">{fileName}</span>
-                  )}
+                  <button
+                    className="primaryBtn"
+                    onClick={() => setHasResume(false)}
+                  >
+                    Don’t Have Resume
+                  </button>
                 </div>
               </div>
-            )}
 
-            <Section title="Basic Info">
-              <Field label="Name" field="First_Name" {...props()} />
-              
-              <div className="fieldRow">
-                <label className="label">Phone</label>
-                <div className="phoneInputGroup">
+              {hasResume === true && (
+                <div className="row">
+                  <label className="label">Upload CV</label>
+                  <div className="fileUploadArea">
+                    <input
+                      type="file"
+                      id="cvUpload"
+                      style={{ display: "none" }}
+                      onChange={(e) => handleCVUpload(e.target.files[0])}
+                    />
+                    <button
+                      className="primaryBtn"
+                      onClick={() =>
+                        document.getElementById("cvUpload").click()
+                      }
+                    >
+                      Choose File
+                    </button>
+                    {fileName && (
+                      <span className="fileName">✓ {fileName}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <Section title="Basic Info">
+                <Field label="Name" field="First_Name" {...props()} />
+
+                <div className="fieldRow">
+                  <label className="label">Phone</label>
+                  <div className="phoneInputGroup">
+                    <select
+                      className="input countryCodeSelect"
+                      disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                      onChange={(e) => {
+                        setIsEditing(true);
+                        handleChange("Country_Code", e.target.value);
+                      }}
+                      value={editedData["Country_Code"] ?? data["Country_Code"] ?? "+91"}
+                    >
+                      {COUNTRY_CODES.map(c => (
+                        <option key={c.code} value={c.code}>{c.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      className="input"
+                      placeholder="Phone number"
+                      value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
+                      disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                      onChange={(e) => {
+                        setIsEditing(true);
+                        handleChange("Mobile", e.target.value);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()} />
+                <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
+                <Field label="Designation" field="Designation" {...props()} />
+
+                <BusinessDomainField
+                  label="Business Domain"
+                  field="Business_Domain"
+                  {...props()}
+                />
+              </Section>
+
+              <Section title="Location">
+                <div className="fieldRow">
+                  <label className="label">Country</label>
                   <select
-                    className="input countryCodeSelect"
-                    disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                    className="input"
+                    value={editedData["Country"] ?? data["Country"] ?? ""}
                     onChange={(e) => {
                       setIsEditing(true);
-                      handleChange("Country_Code", e.target.value);
+                      handleChange("Country", e.target.value);
                     }}
-                    value={editedData["Country_Code"] ?? data["Country_Code"] ?? "+91"}
                   >
-                    {COUNTRY_CODES.map(c => (
-                      <option key={c.code} value={c.code}>{c.label}</option>
+                    <option value="">Select Country</option>
+                    {COUNTRY_LIST.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
                     ))}
                   </select>
-                  <input
-                    className="input"
-                    placeholder="Phone number"
-                    value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
-                    disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
-                    onChange={(e) => {
-                      setIsEditing(true);
-                      handleChange("Mobile", e.target.value);
-                    }}
-                  />
                 </div>
-              </div>
 
-              <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()} />
-              <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
-              <Field label="Designation" field="Designation" {...props()} />
+                <Field label="Mailing State" field="Mailing_State" {...props()} />
+              </Section>
 
-              <BusinessDomainField
-                label="Business Domain"
-                field="Business_Domain"
-                {...props()}
-              />
-            </Section>
+              <Section title="Experience">
+                <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
+                <TextAreaField label="Training" field="Training_Experience" {...props()} />
+              </Section>
 
-            {/* 🔥 ADDED: Location Section */}
-            <Section title="Location">
+              <Section title="Skills & Certifications">
+                <TextAreaField label="Skills" field="Ins_skills" {...props()} />
+
+                <MultiSelectField
+                  label="Certification(s)"
+                  field="Certification_s_Lists"
+                  {...props()}
+                />
+
+                <TextAreaField label="Other Certification" field="Certification" {...props()} />
+              </Section>
+
               <div className="fieldRow">
-                <label className="label">Country</label>
-                <select
-                  className="input"
-                  value={editedData["Country"] ?? data["Country"] ?? ""}
-                  onChange={(e) => {
-                    setIsEditing(true);
-                    handleChange("Country", e.target.value);
-                  }}
-                >
-                  <option value="">Select Country</option>
-                  {COUNTRY_LIST.map((country) => (
-                    <option key={country} value={country}>
-                      {country}
-                    </option>
-                  ))}
-                </select>
+                <label className="label">Email</label>
+                <input className="input" value={data.Email || ""} disabled />
               </div>
 
-              <Field label="Mailing State" field="Mailing_State" {...props()} />
-            </Section>
-
-            <Section title="Description your Experience">
-              <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
-              <TextAreaField label="Training" field="Training_Experience" {...props()} />
-            </Section>
-
-            <Section title="Skills & Certifications">
-              <TextAreaField label="Skills" field="Ins_skills" {...props()} />
-
-              <MultiSelectField
-                label="Certification(s)"
-                field="Certification_s_Lists"
-                {...props()}
-              />
-
-              <TextAreaField label="Other Certification" field="Certification" {...props()} />
-            </Section>
-
-            <div className="fieldRow">
-              <label className="label">Email</label>
-              <input className="input" value={data.Email || ""} disabled />
             </div>
+          )}
 
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -586,35 +589,55 @@ const MultiSelectField = ({
     opt.toLowerCase().includes(search.toLowerCase())
   );
 
+  const removeItem = (opt) => {
+    setIsEditing(true);
+    handleChange(field, selected.filter((o) => o !== opt));
+  };
+
   return (
-    <div className="fieldRow">
+    <div className="fieldRow fieldRowTop">
       <label className="label">{label}</label>
 
       <div className="dropdownContainer" ref={ref}>
-        <div className="dropdownHeader" onClick={() => setOpen(!open)}>
-          {selected.join(", ")}
+        <div
+          className={`dropdownHeader ${open ? "active" : ""}`}
+          onClick={() => setOpen(!open)}
+        >
+          <span className="dropdownSelectedText">
+            {selected.length === 0
+              ? "Select certifications..."
+              : `${selected.length} selected`}
+          </span>
+          <span className={`dropdownChevron ${open ? "open" : ""}`}>▾</span>
         </div>
+
+        {selected.length > 0 && (
+          <div className="tagsWrapper">
+            {selected.map((opt) => (
+              <span key={opt} className="tag">
+                <span>{opt}</span>
+                <button className="tagRemove" onClick={() => removeItem(opt)}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
 
         {open && (
           <div className="dropdownList">
             <input
               className="input"
-              placeholder="Search..."
+              placeholder="Search certifications..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
             {filteredOptions.map((opt) => (
               <div
                 key={opt}
-                className={`dropdownItem ${
-                  selected.includes(opt) ? "selected" : ""
-                }`}
+                className={`dropdownItem ${selected.includes(opt) ? "selected" : ""}`}
                 onClick={() => {
                   const updated = selected.includes(opt)
                     ? selected.filter((o) => o !== opt)
                     : [...selected, opt];
-
                   setIsEditing(true);
                   handleChange(field, updated);
                 }}
@@ -652,18 +675,43 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
     opt.toLowerCase().includes(search.toLowerCase())
   );
 
+  const removeItem = (opt) => {
+    setIsEditing(true);
+    handleChange(field, selectedArr.filter((o) => o !== opt));
+  };
+
   return (
-    <div className="fieldRow">
+    <div className="fieldRow fieldRowTop">
       <label className="label">{label}</label>
       <div className="dropdownContainer" ref={ref}>
-        <div className="dropdownHeader" onClick={() => setOpen(!open)}>
-          {selectedArr.join(", ") || "Select Domain"}
+        <div
+          className={`dropdownHeader ${open ? "active" : ""}`}
+          onClick={() => setOpen(!open)}
+        >
+          <span className="dropdownSelectedText">
+            {selectedArr.length === 0
+              ? "Select domain(s)..."
+              : `${selectedArr.length} selected`}
+          </span>
+          <span className={`dropdownChevron ${open ? "open" : ""}`}>▾</span>
         </div>
+
+        {selectedArr.length > 0 && (
+          <div className="tagsWrapper">
+            {selectedArr.map((opt) => (
+              <span key={opt} className="tag">
+                <span>{opt}</span>
+                <button className="tagRemove" onClick={() => removeItem(opt)}>×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
         {open && (
           <div className="dropdownList">
             <input
               className="input"
-              placeholder="Search..."
+              placeholder="Search domains..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
