@@ -54,11 +54,10 @@
 }
 
 .logo {
-  height: 40px;
+  height: 44px;
   position: absolute;
   left: 36px;
-  filter: brightness(0) invert(1);
-  opacity: 0.95;
+  border-radius: 6px;
 }
 
 .centeredTitle {
