@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
-import logo from "./assets/DataCouch New Logo Jul 2025.png";
+import logo from "./assets/Untitled design.svg";
 
 /* CERT OPTIONS */
 const CERT_OPTIONS = [
