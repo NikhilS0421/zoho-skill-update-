@@ -263,6 +263,11 @@ function App() {
         parsed.Certification_s_Lists = [];
       }
 
+      const basicInfoFields = [
+        "First_Name", "Mobile", "Country_Code", "LinkedIn_URL",
+        "US_Visa", "Designation", "Business_Domain", "Country", "Mailing_State",
+      ];
+
       const currentData = data || {};
       const mergedFields = {};
 
@@ -272,7 +277,14 @@ function App() {
 
         if (incoming === undefined || incoming === null) return;
 
-        if (Array.isArray(effective) || Array.isArray(incoming)) {
+        if (basicInfoFields.includes(key)) {
+          // For basic info: only fill if currently empty
+          const isEmpty = effective == null || effective.toString().trim() === "" ||
+            (Array.isArray(effective) && effective.length === 0);
+          if (isEmpty) {
+            mergedFields[key] = incoming;
+          }
+        } else if (Array.isArray(effective) || Array.isArray(incoming)) {
           const existingArr = Array.isArray(effective) ? effective : (effective ? [effective] : []);
           const incomingArr = Array.isArray(incoming) ? incoming : (incoming ? [incoming] : []);
           if (incomingArr.length > 0) {
