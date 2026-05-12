@@ -229,8 +229,13 @@ function App() {
 
       const raw = await res.text();
 
+      if (!res.ok) {
+        alert(`Parser error: HTTP ${res.status} — ${raw || "no details"}`);
+        return;
+      }
+
       if (!raw || raw.trim() === "") {
-        alert("Empty response from parser");
+        alert("Empty response from parser — the n8n webhook returned no data. Check the n8n workflow is active and returning a response.");
         return;
       }
 
@@ -245,9 +250,22 @@ function App() {
         return;
       }
 
+      const parsed = result.data;
+
+      if (parsed.Certification_s_Lists && typeof parsed.Certification_s_Lists === "string") {
+        parsed.Certification_s_Lists = parsed.Certification_s_Lists
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      if (!Array.isArray(parsed.Certification_s_Lists)) {
+        parsed.Certification_s_Lists = [];
+      }
+
       setData((prev) => ({
         ...(prev || {}),
-        ...(result.data || {}),
+        ...parsed,
       }));
 
       setIsEditing(true);
