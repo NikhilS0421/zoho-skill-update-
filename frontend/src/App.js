@@ -433,40 +433,56 @@ function App() {
               )}
 
               <Section title="Basic Info">
-                <Field label="Name" field="First_Name" {...props()} />
+                <Field label="Name" field="First_Name" {...props()}
+                  hint="Letters, spaces, and hyphens only"
+                  maxLength={100}
+                  validate={(v) => v && !/^[a-zA-Z\s\-'.]+$/.test(v) ? "Only letters, spaces, hyphens, and apostrophes allowed" : ""}
+                />
 
                 <div className="fieldRow">
                   <label className="label">Phone</label>
-                  <div className="phoneInputGroup">
-                    <select
-                      className="input countryCodeSelect"
-                      disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
-                      onChange={(e) => {
-                        setIsEditing(true);
-                        handleChange("Country_Code", e.target.value);
-                      }}
-                      value={editedData["Country_Code"] ?? data["Country_Code"] ?? "+91"}
-                    >
-                      {COUNTRY_CODES.map(c => (
-                        <option key={c.code} value={c.code}>{c.label}</option>
-                      ))}
-                    </select>
-                    <input
-                      className="input"
-                      placeholder="Phone number"
-                      value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
-                      disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
-                      onChange={(e) => {
-                        setIsEditing(true);
-                        handleChange("Mobile", e.target.value);
-                      }}
-                    />
+                  <div className="fieldInputWrapper">
+                    <div className="phoneInputGroup">
+                      <select
+                        className="input countryCodeSelect"
+                        disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                        onChange={(e) => {
+                          setIsEditing(true);
+                          handleChange("Country_Code", e.target.value);
+                        }}
+                        value={editedData["Country_Code"] ?? data["Country_Code"] ?? "+91"}
+                      >
+                        {COUNTRY_CODES.map(c => (
+                          <option key={c.code} value={c.code}>{c.label}</option>
+                        ))}
+                      </select>
+                      <input
+                        className="input"
+                        placeholder="Phone number"
+                        value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
+                        disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                        maxLength={15}
+                        onChange={(e) => {
+                          setIsEditing(true);
+                          handleChange("Mobile", e.target.value);
+                        }}
+                      />
+                    </div>
+                    <div className="fieldMeta">
+                      <span className="fieldHint">Digits only · 7–15 numbers</span>
+                    </div>
                   </div>
                 </div>
 
-                <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()} />
+                <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()}
+                  hint="e.g. https://www.linkedin.com/in/yourname"
+                  validate={(v) => v && !v.toLowerCase().includes("linkedin.com") ? "Must be a valid LinkedIn URL" : ""}
+                />
                 <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
-                <Field label="Designation" field="Designation" {...props()} />
+                <Field label="Designation" field="Designation" {...props()}
+                  hint="Your current job title"
+                  maxLength={150}
+                />
 
                 <BusinessDomainField
                   label="Business Domain"
@@ -495,16 +511,28 @@ function App() {
                   </select>
                 </div>
 
-                <Field label="Mailing State" field="Mailing_State" {...props()} />
+                <Field label="Mailing State" field="Mailing_State" {...props()}
+                  hint="State or province"
+                  maxLength={100}
+                />
               </Section>
 
               <Section title="Describe Your Experience">
-                <TextAreaField label="Consulting" field="Consulting_Experience" {...props()} />
-                <TextAreaField label="Training" field="Training_Experience" {...props()} />
+                <TextAreaField label="Consulting" field="Consulting_Experience" {...props()}
+                  hint="Describe your consulting background and experience"
+                  maxWords={250}
+                />
+                <TextAreaField label="Training" field="Training_Experience" {...props()}
+                  hint="Describe your training and teaching experience"
+                  maxWords={250}
+                />
               </Section>
 
               <Section title="Skills & Certifications">
-                <TextAreaField label="Skills" field="Ins_skills" {...props()} />
+                <TextAreaField label="Skills" field="Ins_skills" {...props()}
+                  hint="List your technical and domain skills"
+                  maxWords={250}
+                />
 
                 <MultiSelectField
                   label="Certification(s)"
@@ -512,7 +540,10 @@ function App() {
                   {...props()}
                 />
 
-                <TextAreaField label="Other Certification" field="Certification" {...props()} />
+                <TextAreaField label="Other Certification" field="Certification" {...props()}
+                  hint="Certifications not available in the dropdown above"
+                  maxWords={250}
+                />
               </Section>
 
               <div className="fieldRow">
@@ -555,16 +586,22 @@ const Section = ({ title, children }) => (
   </div>
 );
 
-const Field = ({ label, field, type, data, editedData, handleChange, setIsEditing }) => {
+const Field = ({ label, field, type, data, editedData, handleChange, setIsEditing, hint, maxLength, validate }) => {
+  const [error, setError] = useState("");
   const originalValue = data[field];
   const value = editedData[field] ?? originalValue ?? "";
+  const strValue = value != null ? value.toString() : "";
 
   const basicFields = ["First_Name", "Mobile", "LinkedIn_URL"];
-
   const isDisabled =
     basicFields.includes(field) &&
     originalValue &&
     originalValue.toString().trim() !== "";
+
+  const checkError = (val) => {
+    if (!validate || isDisabled) return "";
+    return validate(val) || "";
+  };
 
   return (
     <div className="fieldRow">
@@ -580,34 +617,67 @@ const Field = ({ label, field, type, data, editedData, handleChange, setIsEditin
           }}
         />
       ) : (
-        <input
-          className="input"
-          value={value}
-          disabled={isDisabled}
-          onChange={(e) => {
-            setIsEditing(true);
-            handleChange(field, e.target.value);
-          }}
-        />
+        <div className="fieldInputWrapper">
+          <input
+            className={`input${error ? " inputError" : ""}`}
+            value={strValue}
+            disabled={isDisabled}
+            maxLength={maxLength}
+            onChange={(e) => {
+              setIsEditing(true);
+              handleChange(field, e.target.value);
+              if (error) setError(checkError(e.target.value));
+            }}
+            onBlur={(e) => setError(checkError(e.target.value))}
+          />
+          {(hint || maxLength || error) && (
+            <div className="fieldMeta">
+              {error
+                ? <span className="fieldError">{error}</span>
+                : hint && <span className="fieldHint">{hint}</span>
+              }
+              {maxLength && (
+                <span className={`charCount${strValue.length >= maxLength ? " over" : strValue.length >= maxLength * 0.85 ? " warn" : ""}`}>
+                  {strValue.length}/{maxLength}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
 };
 
-const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing }) => {
+const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing, hint, maxWords = 250 }) => {
   const value = editedData[field] ?? data[field] ?? "";
+  const strValue = value != null ? value.toString() : "";
+  const wordCount = strValue.trim() === "" ? 0 : strValue.trim().split(/\s+/).length;
+  const isOver = wordCount > maxWords;
+  const isWarn = wordCount >= Math.floor(maxWords * 0.85);
 
   return (
-    <div className="fieldRow">
+    <div className="fieldRow fieldRowTop">
       <label className="label">{label}</label>
-      <textarea
-        className="textarea"
-        value={value}
-        onChange={(e) => {
-          setIsEditing(true);
-          handleChange(field, e.target.value);
-        }}
-      />
+      <div className="fieldInputWrapper">
+        <textarea
+          className={`textarea${isOver ? " inputError" : ""}`}
+          value={strValue}
+          onChange={(e) => {
+            setIsEditing(true);
+            handleChange(field, e.target.value);
+          }}
+        />
+        <div className="fieldMeta">
+          {isOver
+            ? <span className="fieldError">Exceeds {maxWords}-word limit</span>
+            : hint && <span className="fieldHint">{hint}</span>
+          }
+          <span className={`charCount${isOver ? " over" : isWarn ? " warn" : ""}`}>
+            {wordCount}/{maxWords} words
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
