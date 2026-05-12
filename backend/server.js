@@ -111,7 +111,7 @@ app.post("/contact", async (req, res) => {
 /* ---------- UPDATE CONTACT ---------- */
 app.put("/contact", async (req, res) => {
   try {
-    const { id, data } = req.body;
+    const { id, data, userEmail, userName } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "ID required" });
 
     const token = await getAccessToken();
@@ -125,6 +125,24 @@ app.put("/contact", async (req, res) => {
     if (zohoResult?.status === "error") {
       console.error("Zoho rejected update:", JSON.stringify(zohoResult));
       return res.status(400).json({ success: false, error: zohoResult.message || zohoResult.code });
+    }
+
+    // Send admin notification (fire-and-forget, don't block response)
+    if (process.env.ADMIN_EMAIL) {
+      const displayName = userName || userEmail || "Unknown";
+      resend.emails.send({
+        from: "Skill Portal <otp@support.datacouch.io>",
+        to: process.env.ADMIN_EMAIL,
+        subject: `Skill Update: ${displayName} updated their profile`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+            <h2 style="color: #333;">Profile Updated</h2>
+            <p><strong>${displayName}</strong> has just updated their instructor profile on the Skill Update Portal.</p>
+            ${userEmail ? `<p>Email: ${userEmail}</p>` : ""}
+            <p style="font-size: 12px; color: #777;">Submitted at: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
+          </div>
+        `,
+      }).catch((err) => console.error("Admin notification failed:", err));
     }
 
     res.json({ success: true, data: response.data });

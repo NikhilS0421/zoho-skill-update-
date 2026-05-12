@@ -328,6 +328,8 @@ function App() {
       body: JSON.stringify({
         id: data.id,
         data: editedData,
+        userEmail: data.Email || email,
+        userName: editedData.First_Name || data.First_Name || "",
       }),
     });
 
