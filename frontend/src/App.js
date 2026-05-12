@@ -291,10 +291,9 @@ function App() {
             mergedFields[key] = [...new Set([...existingArr, ...incomingArr])];
           }
         } else {
-          const effectiveStr = effective != null ? effective.toString().trim() : "";
           const incomingStr = incoming.toString().trim();
           if (incomingStr) {
-            mergedFields[key] = effectiveStr ? effectiveStr + "\n" + incomingStr : incomingStr;
+            mergedFields[key] = incomingStr;
           }
         }
       });
