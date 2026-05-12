@@ -157,11 +157,14 @@ function App() {
   const [step, setStep] = useState("email"); // "email" | "otp"
   const [otpLoading, setOtpLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [notif, setNotif] = useState(null); // { message, type: "success"|"error" }
+
+  const showNotif = (message, type = "success") => setNotif({ message, type });
 
   /* ---------- OTP ---------- */
   const sendOTP = async () => {
     if (!email) {
-      alert("Enter your email first");
+      showNotif("Please enter your email address.", "error");
       return;
     }
 
@@ -178,7 +181,7 @@ function App() {
   /* ---------- FETCH ---------- */
   const fetchData = async () => {
     if (!otp) {
-      alert("Enter the OTP sent to your email");
+      showNotif("Please enter the OTP sent to your email.", "error");
       return;
     }
 
@@ -193,7 +196,7 @@ function App() {
     setVerifyLoading(false);
 
     if (!result.success) {
-      alert(result.error || "Invalid OTP. Please try again.");
+      showNotif(result.error || "Invalid OTP. Please try again.", "error");
       return;
     }
 
@@ -232,12 +235,12 @@ function App() {
       const raw = await res.text();
 
       if (!res.ok) {
-        alert(`Parser error: HTTP ${res.status} — ${raw || "no details"}`);
+        showNotif(`CV parser error (HTTP ${res.status}). Please try again.`, "error");
         return;
       }
 
       if (!raw || raw.trim() === "") {
-        alert("returned no data.");
+        showNotif("No response from CV parser. Check the workflow is active.", "error");
         return;
       }
 
@@ -248,7 +251,7 @@ function App() {
       }
 
       if (!result.success || !result.data) {
-        alert("Parsing failed");
+        showNotif("Could not parse the CV. Please try a different file.", "error");
         return;
       }
 
@@ -304,11 +307,11 @@ function App() {
       setEditedData((prev) => ({ ...prev, ...mergedFields }));
       setIsEditing(true);
 
-      alert("CV parsed & form filled");
+      showNotif("CV parsed successfully! Please review and save.", "success");
 
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      showNotif("CV upload failed. Please try again.", "error");
     }
   };
 
@@ -338,7 +341,7 @@ function App() {
     const result = await res.json();
 
     if (!result.success) {
-      alert("Update failed: " + (result.error || "Unknown error"));
+      showNotif("Update failed: " + (result.error || "Unknown error"), "error");
       return;
     }
 
@@ -346,11 +349,12 @@ function App() {
     setEditedData({});
     setIsEditing(false);
 
-    alert("Updated successfully");
+    showNotif("Profile updated successfully!", "success");
   };
 
   return (
     <div className="page">
+      <Notification notif={notif} onClose={() => setNotif(null)} />
       <div className="card">
 
         <div className="cardHeader">
@@ -867,6 +871,35 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+/* ---------- NOTIFICATION ---------- */
+const Notification = ({ notif, onClose }) => {
+  useEffect(() => {
+    if (!notif) return;
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [notif, onClose]);
+
+  if (!notif) return null;
+
+  const isSuccess = notif.type === "success";
+
+  return (
+    <div className="notifOverlay" onClick={onClose}>
+      <div
+        className={`notifBox ${isSuccess ? "notifSuccess" : "notifError"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="notifIconCircle">
+          {isSuccess ? "✓" : "✕"}
+        </div>
+        <p className="notifTitle">{isSuccess ? "Success" : "Error"}</p>
+        <p className="notifMessage">{notif.message}</p>
+        <button className="notifOkBtn" onClick={onClose}>OK</button>
       </div>
     </div>
   );

@@ -433,6 +433,99 @@ input[type="checkbox"] {
   color: #4338ca;
 }
 
+/* ---------- Notification ---------- */
+.notifOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.notifBox {
+  background: #fff;
+  border-radius: 18px;
+  padding: 36px 28px 28px;
+  width: 320px;
+  max-width: 88vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notifIconCircle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.notifSuccess .notifIconCircle {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notifError .notifIconCircle {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notifTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.notifSuccess .notifTitle { color: #16a34a; }
+.notifError .notifTitle   { color: #dc2626; }
+
+.notifMessage {
+  font-size: 14px;
+  color: var(--subtext);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.notifOkBtn {
+  margin-top: 8px;
+  padding: 10px 36px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #fff;
+  transition: opacity 0.15s ease;
+}
+
+.notifSuccess .notifOkBtn { background: #16a34a; }
+.notifError .notifOkBtn   { background: #dc2626; }
+
+.notifOkBtn:hover { opacity: 0.85; }
+
 /* ---------- Auth Steps ---------- */
 .authStep {
   display: flex;
