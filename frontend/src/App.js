@@ -325,6 +325,21 @@ function App() {
 
   /* ---------- UPDATE ---------- */
   const updateContact = async () => {
+    const wordLimitFields = [
+      { key: "Consulting_Experience", label: "Consulting" },
+      { key: "Training_Experience",   label: "Training" },
+      { key: "Ins_skills",            label: "Skills" },
+      { key: "Certification",         label: "Other Certification" },
+    ];
+
+    for (const { key, label } of wordLimitFields) {
+      const val = (editedData[key] ?? data[key] ?? "").toString().trim();
+      const count = val === "" ? 0 : val.split(/\s+/).length;
+      if (count > 250) {
+        showNotif(`"${label}" exceeds the 250-word limit (${count} words). Please shorten it before saving.`, "error");
+        return;
+      }
+    }
     const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
       method: "PUT",
       headers: {
