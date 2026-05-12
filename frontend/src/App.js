@@ -235,7 +235,7 @@ function App() {
       }
 
       if (!raw || raw.trim() === "") {
-        alert("Empty response from parser — the n8n webhook returned no data. Check the n8n workflow is active and returning a response.");
+        alert("returned no data.");
         return;
       }
 
