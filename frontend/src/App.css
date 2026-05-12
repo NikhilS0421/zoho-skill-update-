@@ -433,6 +433,52 @@ input[type="checkbox"] {
   color: #4338ca;
 }
 
+/* ---------- Auth Steps ---------- */
+.authStep {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0 4px;
+}
+
+.authSubtitle {
+  font-size: 14px;
+  color: var(--subtext);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.authBtn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 12px;
+  justify-content: center;
+}
+
+.authBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.authBack {
+  background: none;
+  border: none;
+  color: var(--subtext);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  transition: color 0.15s ease;
+}
+
+.authBack:hover {
+  color: var(--primary);
+}
+
 /* ---------- Field Input Wrapper ---------- */
 .fieldInputWrapper {
   flex: 1;

@@ -154,44 +154,46 @@ function App() {
 
   const [isFetched, setIsFetched] = useState(false);
   const [hasResume, setHasResume] = useState(null);
+  const [step, setStep] = useState("email"); // "email" | "otp"
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   /* ---------- OTP ---------- */
   const sendOTP = async () => {
     if (!email) {
-      alert("Enter email first");
+      alert("Enter your email first");
       return;
     }
 
+    setOtpLoading(true);
     await fetch("https://zoho-skill-update.onrender.com/send-otp", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
-
-    alert("OTP sent to email");
+    setOtpLoading(false);
+    setStep("otp");
   };
 
   /* ---------- FETCH ---------- */
   const fetchData = async () => {
-    if (!email || !otp) {
-      alert("Enter email and OTP");
+    if (!otp) {
+      alert("Enter the OTP sent to your email");
       return;
     }
 
+    setVerifyLoading(true);
     const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
     });
 
     const result = await res.json();
+    setVerifyLoading(false);
 
     if (!result.success) {
-      alert(result.error || "Invalid OTP");
+      alert(result.error || "Invalid OTP. Please try again.");
       return;
     }
 
@@ -206,7 +208,7 @@ function App() {
     }
 
     setData(fetched);
-    setIsFetched(true); 
+    setIsFetched(true);
   };
 
   /* ---------- CV UPLOAD ---------- */
@@ -358,32 +360,43 @@ function App() {
 
         <div className="cardBody">
 
-          {!isFetched && (
-            <>
-              <div className="row">
-                <input
-                  className="input"
-                  placeholder="Enter email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <button className="primaryBtn" onClick={sendOTP}>
-                  Send OTP
-                </button>
-              </div>
+          {!isFetched && step === "email" && (
+            <div className="authStep">
+              <p className="authSubtitle">Enter your email address to get started</p>
+              <input
+                className="input"
+                placeholder="you@example.com"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendOTP()}
+              />
+              <button className="primaryBtn authBtn" onClick={sendOTP} disabled={otpLoading}>
+                {otpLoading ? "Sending…" : "Next"}
+              </button>
+            </div>
+          )}
 
-              <div className="row">
-                <input
-                  className="input"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <button className="primaryBtn" onClick={fetchData}>
-                  Get Info
-                </button>
-              </div>
-            </>
+          {!isFetched && step === "otp" && (
+            <div className="authStep">
+              <p className="authSubtitle">
+                Enter the OTP sent to <strong>{email}</strong>
+              </p>
+              <input
+                className="input"
+                placeholder="6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && fetchData()}
+                autoFocus
+              />
+              <button className="primaryBtn authBtn" onClick={fetchData} disabled={verifyLoading}>
+                {verifyLoading ? "Verifying…" : "Verify OTP"}
+              </button>
+              <button className="authBack" onClick={() => { setStep("email"); setOtp(""); }}>
+                ← Change email
+              </button>
+            </div>
           )}
 
           {data && (
