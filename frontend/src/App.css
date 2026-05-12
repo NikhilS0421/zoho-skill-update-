@@ -114,6 +114,10 @@
 }
 
 /* ---------- Inputs ---------- */
+input[type="checkbox"] {
+  accent-color: var(--primary);
+}
+
 .input,
 .textarea {
   flex: 1;

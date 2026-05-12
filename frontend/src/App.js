@@ -263,11 +263,32 @@ function App() {
         parsed.Certification_s_Lists = [];
       }
 
-      setData((prev) => ({
-        ...(prev || {}),
-        ...parsed,
-      }));
+      const currentData = data || {};
+      const mergedFields = {};
 
+      Object.keys(parsed).forEach((key) => {
+        const effective = editedData[key] !== undefined ? editedData[key] : currentData[key];
+        const incoming = parsed[key];
+
+        if (incoming === undefined || incoming === null) return;
+
+        if (Array.isArray(effective) || Array.isArray(incoming)) {
+          const existingArr = Array.isArray(effective) ? effective : (effective ? [effective] : []);
+          const incomingArr = Array.isArray(incoming) ? incoming : (incoming ? [incoming] : []);
+          if (incomingArr.length > 0) {
+            mergedFields[key] = [...new Set([...existingArr, ...incomingArr])];
+          }
+        } else {
+          const effectiveStr = effective != null ? effective.toString().trim() : "";
+          const incomingStr = incoming.toString().trim();
+          if (incomingStr) {
+            mergedFields[key] = effectiveStr ? effectiveStr + "\n" + incomingStr : incomingStr;
+          }
+        }
+      });
+
+      setData((prev) => ({ ...(prev || {}), ...mergedFields }));
+      setEditedData((prev) => ({ ...prev, ...mergedFields }));
       setIsEditing(true);
 
       alert("CV parsed & form filled");
