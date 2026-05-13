@@ -559,22 +559,22 @@ function App() {
               <Section title="Address">
                 <Field label="Street" field="Mailing_Street" {...props()}
                   hint="House / flat no., street name"
-                  maxLength={255}
+                  maxLength={10}
                 />
 
                 <Field label="City" field="Mailing_City" {...props()}
                   hint="City or town"
-                  maxLength={100}
+                  maxLength={10}
                 />
 
                 <Field label="State" field="Mailing_State" {...props()}
                   hint="State or province"
-                  maxLength={100}
+                  maxLength={10}
                 />
 
                 <Field label="Zip" field="Mailing_Zip" {...props()}
                   hint="Postal / ZIP code"
-                  maxLength={20}
+                  maxLength={8}
                 />
 
                 <div className="fieldRow">
