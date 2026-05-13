@@ -384,7 +384,7 @@ function App() {
     setEditedData({});
     setIsEditing(false);
 
-    showNotif("Profile updated successfully!", "success");
+    showNotif("Thank you for updating your profile! You can see the updates here.", "success");
   };
 
   return (
@@ -611,7 +611,7 @@ function App() {
               <Section title="Skills & Certifications">
                 <TextAreaField label="Skills" field="Ins_skills" {...props()}
                   hint="Comma-separated list of your technical and domain skills"
-                  maxWords={250}
+                  maxWords={30}
                   commaSeparated
                 />
 
