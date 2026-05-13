@@ -103,6 +103,26 @@ const CERT_OPTIONS = [
   "RHCA (Red Hat Certified Architect) certification"
 ];
 
+/* LANGUAGE OPTIONS */
+const LANGUAGE_OPTIONS = [
+  "Arabic",
+  "Chinese - Mandarin",
+  "Czech",
+  "Dutch",
+  "French",
+  "German",
+  "Indonesia Bahasa",
+  "Italian",
+  "Japanese",
+  "Korean",
+  "Malay Bahasa",
+  "Portuguse",
+  "Russian",
+  "Serbian",
+  "Spanish",
+  "Thai",
+];
+
 /* BUSINESS DOMAIN OPTIONS */
 const BUSINESS_DOMAIN_OPTIONS = [
   "Finance",
@@ -522,9 +542,12 @@ function App() {
                   {...props()}
                 />
 
-                <Field label="Languages Known" field="Languages_Known" {...props()}
-                  hint="e.g. English, Hindi, Spanish"
-                  maxLength={200}
+                <BusinessDomainField
+                  label="Languages Known"
+                  field="Languages_Known"
+                  options={LANGUAGE_OPTIONS}
+                  placeholder="Select language(s)..."
+                  {...props()}
                 />
 
                 <Field label="PAN No" field="PAN_Number" {...props()}
@@ -843,7 +866,7 @@ const MultiSelectField = ({
 };
 
 /* BUSINESS DOMAIN DROPDOWN */
-const BusinessDomainField = ({ label, field, data, editedData, handleChange, setIsEditing }) => {
+const BusinessDomainField = ({ label, field, data, editedData, handleChange, setIsEditing, options = BUSINESS_DOMAIN_OPTIONS, placeholder = "Select domain(s)..." }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const ref = useRef(null);
@@ -861,7 +884,7 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
   const selected = editedData[field] ?? data[field] ?? [];
   const selectedArr = Array.isArray(selected) ? selected : selected ? [selected] : [];
 
-  const filtered = BUSINESS_DOMAIN_OPTIONS.filter((opt) =>
+  const filtered = options.filter((opt) =>
     opt.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -880,7 +903,7 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
         >
           <span className="dropdownSelectedText">
             {selectedArr.length === 0
-              ? "Select domain(s)..."
+              ? placeholder
               : `${selectedArr.length} selected`}
           </span>
           <span className={`dropdownChevron ${open ? "open" : ""}`}>▾</span>
@@ -901,7 +924,7 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
           <div className="dropdownList">
             <input
               className="input"
-              placeholder="Search domains..."
+              placeholder={`Search ${label.toLowerCase()}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
