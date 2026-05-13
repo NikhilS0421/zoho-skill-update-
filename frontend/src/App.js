@@ -521,9 +521,39 @@ function App() {
                   field="Business_Domain"
                   {...props()}
                 />
+
+                <Field label="Languages Known" field="Languages_Known" {...props()}
+                  hint="e.g. English, Hindi, Spanish"
+                  maxLength={200}
+                />
+
+                <Field label="PAN No" field="PAN_Number" {...props()}
+                  hint="10-character PAN (e.g. ABCDE1234F)"
+                  maxLength={10}
+                />
               </Section>
 
-              <Section title="Location">
+              <Section title="Address">
+                <Field label="Street" field="Mailing_StreetMailing" {...props()}
+                  hint="House / flat no., street name"
+                  maxLength={255}
+                />
+
+                <Field label="City" field="Mailing_CityMailing" {...props()}
+                  hint="City or town"
+                  maxLength={100}
+                />
+
+                <Field label="State" field="Mailing_State" {...props()}
+                  hint="State or province"
+                  maxLength={100}
+                />
+
+                <Field label="Zip" field="Mailing_ZipMailing" {...props()}
+                  hint="Postal / ZIP code"
+                  maxLength={20}
+                />
+
                 <div className="fieldRow">
                   <label className="label">Country</label>
                   <select
@@ -542,11 +572,6 @@ function App() {
                     ))}
                   </select>
                 </div>
-
-                <Field label="Mailing State" field="Mailing_State" {...props()}
-                  hint="State or province"
-                  maxLength={100}
-                />
               </Section>
 
               <Section title="Describe Your Experience">
@@ -574,6 +599,17 @@ function App() {
 
                 <TextAreaField label="Other Certification" field="Certification" {...props()}
                   hint="Certifications not available in the dropdown above"
+                  maxWords={250}
+                />
+              </Section>
+
+              <Section title="Goals & Feedback">
+                <TextAreaField label="Long Term Goal" field="What_are_the_next_steps_w_r_t_Learning" {...props()}
+                  hint="What are your next steps with respect to learning?"
+                  maxWords={250}
+                />
+                <TextAreaField label="Feedback for Us" field="Description" {...props()}
+                  hint="Any feedback or comments for us"
                   maxWords={250}
                 />
               </Section>
