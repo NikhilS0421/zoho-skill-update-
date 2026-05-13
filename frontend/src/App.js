@@ -557,12 +557,12 @@ function App() {
               </Section>
 
               <Section title="Address">
-                <Field label="Street" field="Mailing_StreetMailing" {...props()}
+                <Field label="Street" field="Mailing_Street" {...props()}
                   hint="House / flat no., street name"
                   maxLength={255}
                 />
 
-                <Field label="City" field="Mailing_CityMailing" {...props()}
+                <Field label="City" field="Mailing_City" {...props()}
                   hint="City or town"
                   maxLength={100}
                 />
@@ -572,7 +572,7 @@ function App() {
                   maxLength={100}
                 />
 
-                <Field label="Zip" field="Mailing_ZipMailing" {...props()}
+                <Field label="Zip" field="Mailing_Zip" {...props()}
                   hint="Postal / ZIP code"
                   maxLength={20}
                 />
