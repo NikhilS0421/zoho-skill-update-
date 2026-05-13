@@ -349,7 +349,7 @@ function App() {
       { key: "Consulting_Experience", label: "Consulting" },
       { key: "Training_Experience",   label: "Training" },
       { key: "Ins_skills",            label: "Skills" },
-      { key: "Certification",         label: "Other Certification" },
+      { key: "Certification",         label: "Other Certifications" },
     ];
 
     for (const { key, label } of wordLimitFields) {
@@ -537,7 +537,7 @@ function App() {
                 />
 
                 <BusinessDomainField
-                  label="Business Domain"
+                  label="Business Domain(s)"
                   field="Business_Domain"
                   {...props()}
                 />
@@ -629,7 +629,7 @@ function App() {
               </Section>
 
               <Section title="Goals & Feedback">
-                <TextAreaField label="Long Term Goal" field="What_are_the_next_steps_w_r_t_Learning" {...props()}
+                <TextAreaField label="Long Term Goal(s)" field="What_are_the_next_steps_w_r_t_Learning" {...props()}
                   hint="What are your next steps with respect to learning?"
                   maxWords={250}
                 />
