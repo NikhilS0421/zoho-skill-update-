@@ -610,8 +610,9 @@ function App() {
 
               <Section title="Skills & Certifications">
                 <TextAreaField label="Skills" field="Ins_skills" {...props()}
-                  hint="List your technical and domain skills"
+                  hint="Comma-separated list of your technical and domain skills"
                   maxWords={250}
+                  commaSeparated
                 />
 
                 <MultiSelectField
@@ -621,8 +622,9 @@ function App() {
                 />
 
                 <TextAreaField label="Other Certification" field="Certification" {...props()}
-                  hint="Certifications not available in the dropdown above"
+                  hint="Comma-separated list of certifications not in the dropdown above"
                   maxWords={250}
+                  commaSeparated
                 />
               </Section>
 
@@ -740,7 +742,10 @@ const Field = ({ label, field, type, data, editedData, handleChange, setIsEditin
   );
 };
 
-const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing, hint, maxWords = 250 }) => {
+const normalizeToComma = (val) =>
+  val.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean).join(", ");
+
+const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing, hint, maxWords = 250, commaSeparated = false }) => {
   const value = editedData[field] ?? data[field] ?? "";
   const strValue = value != null ? value.toString() : "";
   const wordCount = strValue.trim() === "" ? 0 : strValue.trim().split(/\s+/).length;
@@ -757,6 +762,11 @@ const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEdit
           onChange={(e) => {
             setIsEditing(true);
             handleChange(field, e.target.value);
+          }}
+          onBlur={(e) => {
+            if (commaSeparated && e.target.value.trim()) {
+              handleChange(field, normalizeToComma(e.target.value));
+            }
           }}
         />
         <div className="fieldMeta">
