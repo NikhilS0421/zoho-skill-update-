@@ -290,7 +290,7 @@ function App() {
 
       const basicInfoFields = [
         "First_Name", "Mobile", "Country_Code", "LinkedIn_URL",
-        "US_Visa", "Designation", "Business_Domain", "Country", "Mailing_State",
+        "US_Visa", "Business_Domain", "Country", "Mailing_State",
       ];
 
       const currentData = data || {};
@@ -531,11 +531,6 @@ function App() {
                   validate={(v) => v && !v.toLowerCase().includes("linkedin.com") ? "Must be a valid LinkedIn URL" : ""}
                 />
                 <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
-                <Field label="Designation" field="Designation" {...props()}
-                  hint="Your current job title"
-                  maxLength={150}
-                />
-
                 <BusinessDomainField
                   label="Business Domain(s)"
                   field="Business_Domain"
@@ -559,22 +554,22 @@ function App() {
               <Section title="Address">
                 <Field label="Street" field="Mailing_Street" {...props()}
                   hint="House / flat no., street name"
-                  maxLength={10}
+                  maxLength={100}
                 />
 
                 <Field label="City" field="Mailing_City" {...props()}
                   hint="City or town"
-                  maxLength={10}
+                  maxLength={100}
                 />
 
                 <Field label="State" field="Mailing_State" {...props()}
                   hint="State or province"
-                  maxLength={10}
+                  maxLength={100}
                 />
 
                 <Field label="Zip" field="Mailing_Zip" {...props()}
                   hint="Postal / ZIP code"
-                  maxLength={8}
+                  maxLength={10}
                 />
 
                 <div className="fieldRow">
