@@ -345,18 +345,19 @@ function App() {
 
   /* ---------- UPDATE ---------- */
   const updateContact = async () => {
-    const wordLimitFields = [
-      { key: "Consulting_Experience", label: "Consulting" },
-      { key: "Training_Experience",   label: "Training" },
-      { key: "Ins_skills",            label: "Skills" },
-      { key: "Certification",         label: "Other Certifications" },
+    const charLimitFields = [
+      { key: "Consulting_Experience",              label: "Consulting",          max: 2500 },
+      { key: "Training_Experience",                label: "Training",            max: 2500 },
+      { key: "Ins_skills",                         label: "Skills",              max: 222  },
+      { key: "Certification",                      label: "Other Certifications",max: 2500 },
+      { key: "What_are_the_next_steps_w_r_t_Learning", label: "Long Term Goals", max: 2500 },
+      { key: "Description",                        label: "Feedback",            max: 2500 },
     ];
 
-    for (const { key, label } of wordLimitFields) {
-      const val = (editedData[key] ?? data[key] ?? "").toString().trim();
-      const count = val === "" ? 0 : val.split(/\s+/).length;
-      if (count > 250) {
-        showNotif(`"${label}" exceeds the 250-word limit (${count} words). Please shorten it before saving.`, "error");
+    for (const { key, label, max } of charLimitFields) {
+      const val = (editedData[key] ?? data[key] ?? "").toString();
+      if (val.length > max) {
+        showNotif(`"${label}" exceeds the ${max}-character limit (${val.length} chars). Please shorten it before saving.`, "error");
         return;
       }
     }
@@ -595,18 +596,18 @@ function App() {
               <Section title="Describe Your Experience">
                 <TextAreaField label="Consulting" field="Consulting_Experience" {...props()}
                   hint="Describe your consulting background and experience"
-                  maxWords={250}
+                  maxChars={2500}
                 />
                 <TextAreaField label="Training" field="Training_Experience" {...props()}
                   hint="Describe your training and teaching experience"
-                  maxWords={250}
+                  maxChars={2500}
                 />
               </Section>
 
               <Section title="Skills & Certifications">
                 <TextAreaField label="Skills" field="Ins_skills" {...props()}
                   hint="Comma-separated list of your technical and domain skills"
-                  maxWords={30}
+                  maxChars={222}
                   commaSeparated
                 />
 
@@ -618,7 +619,7 @@ function App() {
 
                 <TextAreaField label="Other Certification" field="Certification" {...props()}
                   hint="Comma-separated list of certifications not in the dropdown above"
-                  maxWords={250}
+                  maxChars={2500}
                   commaSeparated
                 />
               </Section>
@@ -626,11 +627,11 @@ function App() {
               <Section title="Goals & Feedback">
                 <TextAreaField label="Long Term Goal(s)" field="What_are_the_next_steps_w_r_t_Learning" {...props()}
                   hint="What are your next steps with respect to learning?"
-                  maxWords={250}
+                  maxChars={2500}
                 />
                 <TextAreaField label="Feedback for Us" field="Description" {...props()}
                   hint="Any feedback or comments for us"
-                  maxWords={250}
+                  maxChars={2500}
                 />
               </Section>
 
@@ -740,12 +741,12 @@ const Field = ({ label, field, type, data, editedData, handleChange, setIsEditin
 const normalizeToComma = (val) =>
   val.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean).join(", ");
 
-const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing, hint, maxWords = 250, commaSeparated = false }) => {
+const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEditing, hint, maxChars = 2500, commaSeparated = false }) => {
   const value = editedData[field] ?? data[field] ?? "";
   const strValue = value != null ? value.toString() : "";
-  const wordCount = strValue.trim() === "" ? 0 : strValue.trim().split(/\s+/).length;
-  const isOver = wordCount > maxWords;
-  const isWarn = wordCount >= Math.floor(maxWords * 0.85);
+  const charCount = strValue.length;
+  const isOver = charCount > maxChars;
+  const isWarn = charCount >= Math.floor(maxChars * 0.85);
 
   return (
     <div className="fieldRow fieldRowTop">
@@ -766,11 +767,11 @@ const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEdit
         />
         <div className="fieldMeta">
           {isOver
-            ? <span className="fieldError">Exceeds {maxWords}-word limit</span>
+            ? <span className="fieldError">Exceeds {maxChars} character limit</span>
             : hint && <span className="fieldHint">{hint}</span>
           }
           <span className={`charCount${isOver ? " over" : isWarn ? " warn" : ""}`}>
-            {wordCount}/{maxWords} words
+            {charCount}/{maxChars} chars
           </span>
         </div>
       </div>
