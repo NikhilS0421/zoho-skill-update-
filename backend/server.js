@@ -104,7 +104,9 @@ app.post("/contact", async (req, res) => {
 
     res.json({ success: true, data: response.data.data[0] });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Fetch failed" });
+    const detail = err.response?.data || err.message || String(err);
+    console.error("❌ /contact fetch error:", JSON.stringify(detail));
+    res.status(500).json({ success: false, error: "Fetch failed", detail });
   }
 });
 
