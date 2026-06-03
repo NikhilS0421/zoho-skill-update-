@@ -1,0 +1,820 @@
+/* ---------- Root Theme ---------- */
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #a5b4fc;
+  --accent: #8b5cf6;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --subtext: #64748b;
+  --label-color: #334155;
+  --section-bg: #f8fafc;
+  --input-bg: #ffffff;
+  --success: #059669;
+  --tag-bg: #eef2ff;
+  --tag-color: #4338ca;
+  --tag-border: #c7d2fe;
+  --shadow-card: 0 25px 60px -10px rgba(0, 0, 0, 0.45);
+  --shadow-btn: 0 4px 14px rgba(99, 102, 241, 0.45);
+}
+
+/* ---------- Page Layout ---------- */
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 20px 80px;
+  background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 45%, #0f172a 100%);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  box-sizing: border-box;
+}
+
+/* ---------- Card ---------- */
+.card {
+  width: 100%;
+  max-width: 700px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ---------- Card Header (gradient banner) ---------- */
+.cardHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 36px 24px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-bottom: none;
+}
+
+.logo {
+  height: 44px;
+  position: absolute;
+  left: 36px;
+  border-radius: 6px;
+}
+
+.centeredTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ---------- Card Body ---------- */
+.cardBody {
+  padding: 28px 36px 36px;
+}
+
+/* ---------- Data container ---------- */
+.dataContainer {
+  margin-top: 4px;
+}
+
+/* ---------- Row (OTP / email rows) ---------- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Field Row ---------- */
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fieldRowTop {
+  align-items: flex-start;
+}
+
+.fieldRowTop .label {
+  padding-top: 10px;
+}
+
+/* ---------- Label ---------- */
+.label {
+  width: 155px;
+  min-width: 155px;
+  font-weight: 500;
+  color: var(--label-color);
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Inputs ---------- */
+input[type="checkbox"] {
+  accent-color: var(--primary);
+}
+
+.input,
+.textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  font-size: 14px;
+  background: var(--input-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.input:disabled,
+.textarea:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+/* ---------- Phone input group ---------- */
+.phoneInputGroup {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.countryCodeSelect {
+  flex: 0 0 115px;
+  width: 115px;
+}
+
+/* ---------- Primary Button ---------- */
+.primaryBtn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13.5px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-btn);
+  letter-spacing: 0.02em;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.primaryBtn:hover {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+}
+
+.primaryBtn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-btn);
+}
+
+/* ---------- Button group ---------- */
+.btnGroup {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+/* ---------- File upload ---------- */
+.fileUploadArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.fileName {
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* ---------- Section Cards ---------- */
+.section {
+  margin-bottom: 20px;
+  padding: 20px 20px 8px;
+  border-radius: 14px;
+  background: var(--section-bg);
+  border: 1.5px solid var(--border);
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 0 2px 2px 0;
+}
+
+.section:hover {
+  border-color: #c7d2fe;
+}
+
+.section h4 {
+  margin: 0 0 14px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- Save Button Container ---------- */
+.saveContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.saveContainer .primaryBtn {
+  padding: 11px 28px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+/* ---------- Dropdown Container ---------- */
+.dropdownContainer {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdownHeader {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  cursor: pointer;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  gap: 8px;
+  user-select: none;
+}
+
+.dropdownHeader:hover {
+  border-color: var(--primary-light);
+}
+
+.dropdownHeader.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.dropdownSelectedText {
+  color: var(--subtext);
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdownChevron {
+  font-size: 10px;
+  color: var(--subtext);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.dropdownChevron.open {
+  transform: rotate(180deg);
+}
+
+/* ---------- Dropdown List ---------- */
+.dropdownList {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  z-index: 200;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.13);
+  animation: dropIn 0.14s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownList .input {
+  border-radius: 10px 10px 0 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1.5px solid var(--border);
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dropdownList .input:focus {
+  box-shadow: none;
+  border-color: var(--primary);
+}
+
+.dropdownItem {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--text);
+  transition: background 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdownItem:hover {
+  background: #f1f5f9;
+}
+
+.dropdownItem.selected {
+  background: #eef2ff;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.dropdownItem.selected::before {
+  content: '✓';
+  font-size: 11px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ---------- Chips / Tags ---------- */
+.tagsWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 10px;
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  border: 1px solid var(--tag-border);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 260px;
+}
+
+.tag span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tagRemove {
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  color: #818cf8;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+  background: none;
+  border: none;
+  padding: 0 0 1px;
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+}
+
+.tagRemove:hover {
+  color: #4338ca;
+}
+
+/* ---------- Notification ---------- */
+.notifOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.notifBox {
+  background: #fff;
+  border-radius: 18px;
+  padding: 36px 28px 28px;
+  width: 320px;
+  max-width: 88vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notifIconCircle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.notifSuccess .notifIconCircle {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notifError .notifIconCircle {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notifTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.notifSuccess .notifTitle { color: #16a34a; }
+.notifError .notifTitle   { color: #dc2626; }
+
+.notifMessage {
+  font-size: 14px;
+  color: var(--subtext);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.notifOkBtn {
+  margin-top: 8px;
+  padding: 10px 36px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #fff;
+  transition: opacity 0.15s ease;
+}
+
+.notifSuccess .notifOkBtn { background: #16a34a; }
+.notifError .notifOkBtn   { background: #dc2626; }
+
+.notifOkBtn:hover { opacity: 0.85; }
+
+/* ---------- Auth Steps ---------- */
+.authStep {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0 4px;
+}
+
+.authSubtitle {
+  font-size: 14px;
+  color: var(--subtext);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.authBtn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 12px;
+  justify-content: center;
+}
+
+.authBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.authBack {
+  background: none;
+  border: none;
+  color: var(--subtext);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  transition: color 0.15s ease;
+}
+
+.authBack:hover {
+  color: var(--primary);
+}
+
+/* ---------- Field Input Wrapper ---------- */
+.fieldInputWrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldInputWrapper > .input,
+.fieldInputWrapper > .textarea {
+  width: 100%;
+  flex: none;
+}
+
+/* ---------- Field Meta (hint + char count row) ---------- */
+.fieldMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 16px;
+  gap: 8px;
+}
+
+.fieldHint {
+  font-size: 11.5px;
+  color: var(--subtext);
+  line-height: 1.4;
+}
+
+.fieldError {
+  font-size: 11.5px;
+  color: #ef4444;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.charCount {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.charCount.warn {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.charCount.over {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ---------- Error input state ---------- */
+.inputError {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* ---------- Helpers ---------- */
+.actionBtn {
+  min-width: 120px;
+  max-width: 120px;
+  justify-content: center;
+  display: flex;
+}
+
+.inputGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.inputWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.timerText {
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+/* =============================================
+   TABLET  (≤ 768px)
+   ============================================= */
+@media (max-width: 768px) {
+  .page {
+    padding: 24px 16px 60px;
+  }
+
+  .cardHeader {
+    padding: 22px 28px 20px;
+  }
+
+  .logo {
+    left: 28px;
+    height: 36px;
+  }
+
+  .centeredTitle {
+    font-size: 18px;
+  }
+
+  .cardBody {
+    padding: 22px 28px 28px;
+  }
+
+  .label {
+    width: 140px;
+    min-width: 140px;
+  }
+}
+
+/* =============================================
+   MOBILE  (≤ 480px)
+   ============================================= */
+@media (max-width: 480px) {
+  .page {
+    padding: 0 0 40px;
+    align-items: flex-start;
+  }
+
+  .card {
+    border-radius: 0 0 20px 20px;
+    min-height: 100vh;
+  }
+
+  .cardHeader {
+    padding: 20px 20px 18px;
+    flex-direction: column;
+    gap: 6px;
+    height: auto;
+  }
+
+  .logo {
+    position: static;
+    height: 32px;
+  }
+
+  .centeredTitle {
+    font-size: 16px;
+  }
+
+  .cardBody {
+    padding: 20px 20px 28px;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row .input,
+  .row .primaryBtn {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .btnGroup {
+    width: 100%;
+  }
+
+  .btnGroup .primaryBtn {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  .fileUploadArea {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fileUploadArea .primaryBtn {
+    width: 100%;
+  }
+
+  .fieldRow,
+  .fieldRowTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fieldRowTop .label {
+    padding-top: 0;
+  }
+
+  .label {
+    width: 100%;
+    min-width: unset;
+    margin-bottom: 2px;
+  }
+
+  .input,
+  .textarea,
+  .dropdownContainer {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .phoneInputGroup {
+    width: 100%;
+  }
+
+  .countryCodeSelect {
+    flex: 0 0 95px;
+    width: 95px;
+  }
+
+  .saveContainer {
+    justify-content: stretch;
+  }
+
+  .saveContainer .primaryBtn {
+    width: 100%;
+  }
+
+  .actionBtn {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+  }
+}
+
+/* =============================================
+   SMALL PHONES  (≤ 360px)
+   ============================================= */
+@media (max-width: 360px) {
+  .centeredTitle {
+    font-size: 15px;
+  }
+
+  .primaryBtn {
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
+  .section {
+    padding: 14px 14px 4px;
+  }
+}
