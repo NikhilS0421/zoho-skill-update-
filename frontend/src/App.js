@@ -606,7 +606,7 @@ function App() {
 
               <Section title="Skills & Certifications">
                 <TextAreaField label="Skills" field="Ins_skills" {...props()}
-                  hint="Comma-separated list of your technical and domain skills"
+                  hint="If you have more skills, add them in Other Certifications and Skills below"
                   maxChars={222}
                   commaSeparated
                 />
@@ -617,8 +617,8 @@ function App() {
                   {...props()}
                 />
 
-                <TextAreaField label="Other Certification" field="Certification" {...props()}
-                  hint="Comma-separated list of certifications not in the dropdown above"
+                <TextAreaField label="Other Certifications and Skills" field="Certification" {...props()}
+                  hint="Comma-separated list of certifications and additional skills not listed above"
                   maxChars={2500}
                   commaSeparated
                 />
