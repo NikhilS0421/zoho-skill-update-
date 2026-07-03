@@ -199,9 +199,10 @@ function App() {
   };
 
   /* ---------- FETCH ---------- */
-  const fetchData = async () => {
-    if (!otp) {
-      showNotif("Please enter the OTP sent to your email.", "error");
+  const fetchData = async (otpValue) => {
+    const otpToUse = otpValue !== undefined ? otpValue : otp;
+    if (!otpToUse || !/^\d{6}$/.test(otpToUse)) {
+      showNotif("Please enter the 6-digit OTP.", "error");
       return;
     }
 
@@ -209,7 +210,7 @@ function App() {
     const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({ email, otp: otpToUse }),
     });
 
     const result = await res.json();
@@ -422,17 +423,48 @@ function App() {
               <p className="authSubtitle">
                 Enter the OTP sent to <strong>{email}</strong>
               </p>
-              <input
-                className="input"
-                placeholder="6-digit OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchData()}
-                autoFocus
-              />
-              <button className="primaryBtn authBtn" onClick={fetchData} disabled={verifyLoading}>
-                {verifyLoading ? "Verifying…" : "Verify OTP"}
-              </button>
+              <div className="otpBoxes">
+                {[0,1,2,3,4,5].map((i) => (
+                  <input
+                    key={i}
+                    id={`otp-box-${i}`}
+                    className="otpBox"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={otp[i] || ""}
+                    autoFocus={i === 0}
+                    disabled={verifyLoading}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(-1);
+                      const chars = Array.from({ length: 6 }, (_, k) => otp[k] || "");
+                      chars[i] = val;
+                      const newOtp = chars.join("");
+                      setOtp(newOtp.trimEnd());
+                      if (val && i < 5) document.getElementById(`otp-box-${i + 1}`).focus();
+                      if (/^\d{6}$/.test(newOtp)) fetchData(newOtp);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !otp[i] && i > 0) {
+                        document.getElementById(`otp-box-${i - 1}`).focus();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+                      if (pasted) {
+                        setOtp(pasted);
+                        document.getElementById(`otp-box-${Math.min(pasted.length, 5)}`)?.focus();
+                        if (pasted.length === 6) fetchData(pasted);
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+              {verifyLoading
+                ? <p className="authSubtitle otpVerifying">Verifying…</p>
+                : <p className="authSubtitle otpHint">Auto-verifies when all digits are entered</p>
+              }
               <button className="authBack" onClick={() => { setStep("email"); setOtp(""); }}>
                 ← Change email
               </button>

@@ -572,6 +572,50 @@ input[type="checkbox"] {
   color: var(--primary);
 }
 
+/* ---------- OTP Boxes ---------- */
+.otpBoxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.otpBox {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--input-bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  -moz-appearance: textfield;
+}
+
+.otpBox:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.otpBox:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otpVerifying {
+  text-align: center;
+  color: var(--primary) !important;
+  font-weight: 500;
+}
+
+.otpHint {
+  text-align: center;
+  font-size: 12px !important;
+}
+
 /* ---------- Field Input Wrapper ---------- */
 .fieldInputWrapper {
   flex: 1;
