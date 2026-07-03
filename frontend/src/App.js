@@ -233,6 +233,7 @@ function App() {
 
     setData(fetched);
     setIsFetched(true);
+    showNotif(`Welcome, ${fetched.First_Name || "Instructor"}! Please review and update your profile.`, "success");
   };
 
   /* ---------- CV UPLOAD ---------- */
@@ -473,6 +474,14 @@ function App() {
 
           {data && (
             <div className="dataContainer">
+
+              <div className="welcomeBanner">
+                <span className="welcomeWave">👋</span>
+                <div>
+                  <p className="welcomeName">Welcome, {data.First_Name || "Instructor"}!</p>
+                  <p className="welcomeSub">Review your profile below and save any updates.</p>
+                </div>
+              </div>
 
               <div className="row">
                 <label className="label">Do you have a resume?</label>
