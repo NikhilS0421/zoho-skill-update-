@@ -56,7 +56,7 @@ The portal provides a secure self-service form for instructors to keep their pro
           └─────────────┘       └──────────────────┘  └──────────────┘
 ```
 
-The frontend is a single-page app hosted on **Vercel**. The backend is a stateless Express server hosted on **Render**. There is no traditional database — all contact data lives in Zoho CRM.
+The frontend is a single-page app hosted on **Vercel**. The backend is an Express server hosted on **Render**. OTPs, sessions, and rate limits are held in process memory; run a single instance. Restarts require users to verify again. Use a shared store before scaling to multiple instances. There is no traditional database — all contact data lives in Zoho CRM.
 
 ---
 
@@ -111,16 +111,19 @@ zoho-form-app/
 ## Features
 
 ### Authentication
-- Email-based OTP login (6-digit code, valid for one session)
-- OTP stored in-memory on the backend (no database required)
+- Email-based OTP login (6 digits, expires after 10 minutes, single use, maximum 5 attempts)
+- OTP values are cryptographically generated and stored as hashes in memory
+- Resends limited to once per minute and 5 per email per hour; IP limits also apply
+- Successful verification returns a bearer session valid for 1 hour, tied to the verified contact
+- Profile updates require the session and only accept allowed, validated fields
 - Email sent via Resend from `otp@support.datacouch.io`
 
 ### Profile Form
 - **Basic Info**: Full name, phone number (with country code selector), LinkedIn URL, US visa status, designation, business domain
 - **Location**: Country (195 options), mailing state
-- **Experience**: Consulting experience, training experience (250-word limit each)
+- **Experience**: Consulting experience, training experience (2,500-character limit each)
 - **Skills**: Free-text skills field, multi-select certifications (100+ options), other certifications
-- **CV Upload**: PDF upload → parsed by n8n webhook → auto-fills certifications and skills
+- **CV Upload**: PDF upload (maximum 10 MB) → parsed by n8n webhook → fills editable draft fields; changes are persisted only after Save Changes succeeds
 
 ### Certifications Supported
 Over 100 options across:
@@ -179,41 +182,37 @@ Verifies the OTP and returns the contact record from Zoho CRM.
 **Success response:**
 ```json
 {
-  "id": "zoho-contact-id",
-  "First_Name": "Jane",
-  "Last_Name": "Doe",
-  "Email": "instructor@example.com",
-  "Phone": "+1 555-000-0000",
-  "Skills__c": "Python, React",
-  ...
+  "success": true,
+  "sessionToken": "<opaque-token>",
+  "expiresIn": 3600,
+  "data": {
+    "id": "zoho-contact-id",
+    "First_Name": "Jane",
+    "Email": "instructor@example.com",
+    "Ins_skills": "Python, React"
+  }
 }
 ```
 
-**Error responses:**
-- `400` — Invalid or expired OTP
-- `404` — Contact not found in Zoho CRM
-
----
+Returns `401` for invalid/expired OTPs, `404` when no matching contact exists, `429` for excessive attempts, and `502` for upstream failures. A temporary CRM failure leaves the code available for retry until it expires or hits its attempt limit.
 
 ### `PUT /contact`
-Updates the contact record in Zoho CRM and emails the admin.
 
-**Request body:**
+Requires `Authorization: Bearer <sessionToken>` from OTP verification. The supplied contact ID must match the session. Identity fields such as `id` and `Email` cannot appear inside `data`.
+
 ```json
 {
   "id": "zoho-contact-id",
-  "First_Name": "Jane",
-  "Last_Name": "Doe",
-  "Skills__c": "Python, React, Node.js",
-  "Certifications__c": "AWS Certified Solutions Architect",
-  ...
+  "data": {
+    "Ins_skills": "Python, React, Node.js",
+    "Certification_s_Lists": ["Certified Kubernetes Administrator (CKA)"]
+  }
 }
 ```
 
-**Success response:**
-```json
-{ "message": "Contact updated successfully" }
-```
+**Success response:** `{ "success": true }`
+
+Returns `400` for invalid fields or CRM rejection, `401` for a missing/expired session, `403` for a different contact ID, and `502` for upstream failures. The UI retains unsaved changes after failure, including while reverifying an expired session for the same contact.
 
 ---
 
@@ -235,6 +234,12 @@ ADMIN_EMAIL=admin@yourcompany.com
 
 # Server port (optional, defaults to 9000)
 PORT=9000
+
+# Comma-separated allowed frontend origins
+FRONTEND_ORIGINS=http://localhost:3000,https://your-app.vercel.app
+
+# Set only when the number of trusted reverse proxy hops is known
+# TRUST_PROXY_HOPS=1
 ```
 
 > **Note:** Never commit `.env` to version control. Add it to `.gitignore`.
@@ -270,7 +275,9 @@ npm start
 # Runs on http://localhost:3000
 ```
 
-The frontend proxies API calls to `http://localhost:9000` by default (configured via the `proxy` field in `frontend/package.json`, or update the `BACKEND_URL` constant in `App.js` for local development).
+The frontend uses `http://localhost:9000` during development and the existing Render backend URL in production. Override either with `REACT_APP_API_URL` in `frontend/.env` (see `.env.example`). Configure `FRONTEND_ORIGINS` on the backend with your frontend URL. Deploy both frontend and backend together because updates now require the session token.
+
+Run backend checks with `cd backend && npm test`, frontend checks with `cd frontend && CI=true npm test -- --watchAll=false --runInBand`, and the production build with `cd frontend && npm run build`. Tests mock Zoho and email delivery; they do not update live contacts or send emails.
 
 ---
 

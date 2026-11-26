@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import "./App.css";
 import logo from "./assets/Untitled design.svg";
+import { requestJSON, normalizeProfile, validateField, EDITABLE_FIELDS, ARRAY_FIELDS } from "./formUtils";
 
 /* CERT OPTIONS */
 const CERT_OPTIONS = [
@@ -165,7 +166,15 @@ const COUNTRY_LIST = [
 
 function App() {
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [otpDigits, setOtpDigits] = useState(Array(6).fill(""));
+  const [sessionToken, setSessionToken] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const sendingRef = useRef(false);
+  const verifyingRef = useRef(false);
+  const savingRef = useRef(false);
+  const parsingRef = useRef(false);
+  const authVersionRef = useRef(0);
 
   const [data, setData] = useState(null);
   const [editedData, setEditedData] = useState({});
@@ -180,67 +189,82 @@ function App() {
   const [notif, setNotif] = useState(null); // { message, type: "success"|"error" }
 
   const showNotif = (message, type = "success") => setNotif({ message, type });
+  const closeNotif = useCallback(() => setNotif(null), []);
 
   /* ---------- OTP ---------- */
   const sendOTP = async () => {
-    if (!email) {
-      showNotif("Please enter your email address.", "error");
+    if (sendingRef.current || verifyingRef.current) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      showNotif("Please enter a valid email address.", "error");
       return;
     }
-
+    sendingRef.current = true;
     setOtpLoading(true);
-    await fetch("https://zoho-skill-update.onrender.com/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    setOtpLoading(false);
-    setStep("otp");
+    try {
+      await requestJSON("/send-otp", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+      setEmail(normalizedEmail);
+      setOtpDigits(Array(6).fill(""));
+      setStep("otp");
+      showNotif("Code sent. It expires in 10 minutes.");
+    } catch (err) {
+      showNotif(err.message, "error");
+    } finally {
+      sendingRef.current = false;
+      setOtpLoading(false);
+    }
   };
 
-  /* ---------- FETCH ---------- */
   const fetchData = async (otpValue) => {
-    const otpToUse = otpValue !== undefined ? otpValue : otp;
-    if (!otpToUse || !/^\d{6}$/.test(otpToUse)) {
-      showNotif("Please enter the 6-digit OTP.", "error");
-      return;
-    }
-
+    if (verifyingRef.current || !/^\d{6}$/.test(otpValue)) return;
+    verifyingRef.current = true;
+    const authVersion = authVersionRef.current;
     setVerifyLoading(true);
-    const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp: otpToUse }),
-    });
-
-    const result = await res.json();
-    setVerifyLoading(false);
-
-    if (!result.success) {
-      showNotif(result.error || "Invalid OTP. Please try again.", "error");
-      return;
+    try {
+      const result = await requestJSON("/contact", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), otp: otpValue }),
+      });
+      if (authVersion !== authVersionRef.current) return;
+      if (!result.data?.id || !result.sessionToken) throw new Error("Please verify again to start a secure session.");
+      setData(normalizeProfile(result.data));
+      setSessionToken(result.sessionToken);
+      const sameContact = data?.id === result.data.id;
+      if (!sameContact) {
+        setEditedData({});
+        setIsEditing(false);
+        setFileName("");
+        setHasResume(null);
+      }
+      setIsFetched(true);
+      showNotif(`Welcome, ${result.data.First_Name || "Instructor"}! Please review and update your profile.`);
+    } catch (err) {
+      if (authVersion === authVersionRef.current) showNotif(err.message, "error");
+    } finally {
+      verifyingRef.current = false;
+      setVerifyLoading(false);
     }
-
-    const fetched = result.data;
-
-    if (
-      fetched.Certification_s_Lists &&
-      typeof fetched.Certification_s_Lists === "string"
-    ) {
-      fetched.Certification_s_Lists =
-        fetched.Certification_s_Lists.split(",").map((s) => s.trim());
-    }
-
-    setData(fetched);
-    setIsFetched(true);
-    showNotif(`Welcome, ${fetched.First_Name || "Instructor"}! Please review and update your profile.`, "success");
   };
 
   /* ---------- CV UPLOAD ---------- */
   const handleCVUpload = async (file) => {
-    if (!file) return;
-
-    setFileName(file.name);
+    if (!file || parsingRef.current || savingRef.current) return;
+    if (!/\.pdf$/i.test(file.name) || (file.type && file.type !== "application/pdf")) {
+      showNotif("Please choose a PDF file.", "error");
+      return;
+    }
+    if (!file.size || file.size > 10 * 1024 * 1024) {
+      showNotif("Choose a PDF smaller than 10 MB.", "error");
+      return;
+    }
+    parsingRef.current = true;
+    setParsing(true);
+    setFileName("");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -251,6 +275,7 @@ function App() {
         {
           method: "POST",
           body: formData,
+          signal: controller.signal,
         }
       );
 
@@ -272,12 +297,15 @@ function App() {
         result = result[0];
       }
 
-      if (!result.success || !result.data) {
+      if (!result?.success || !result.data || typeof result.data !== "object" || Array.isArray(result.data)) {
         showNotif("Could not parse the CV. Please try a different file.", "error");
         return;
       }
 
-      const parsed = result.data;
+      const parsed = { ...result.data };
+      ARRAY_FIELDS.filter(key => key !== "Certification_s_Lists").forEach(key => {
+        if (typeof parsed[key] === "string") parsed[key] = parsed[key].trim() ? [parsed[key].trim()] : [];
+      });
 
       if (parsed.Certification_s_Lists && typeof parsed.Certification_s_Lists === "string") {
         parsed.Certification_s_Lists = parsed.Certification_s_Lists
@@ -298,11 +326,18 @@ function App() {
       const currentData = data || {};
       const mergedFields = {};
 
-      Object.keys(parsed).forEach((key) => {
+      Object.keys(parsed).filter(key => EDITABLE_FIELDS.includes(key)).forEach((key) => {
         const effective = editedData[key] !== undefined ? editedData[key] : currentData[key];
         const incoming = parsed[key];
 
         if (incoming === undefined || incoming === null) return;
+        if (key === "US_Visa" && typeof incoming !== "boolean") return;
+        if (ARRAY_FIELDS.includes(key) && (!Array.isArray(incoming) || incoming.some(v => typeof v !== "string"))) return;
+        if (!ARRAY_FIELDS.includes(key) && key !== "US_Visa" && typeof incoming !== "string") return;
+        if (key === "US_Visa") {
+          if (effective == null || effective === "") mergedFields[key] = incoming;
+          return;
+        }
 
         if (basicInfoFields.includes(key)) {
           // For basic info: only fill if currently empty
@@ -325,15 +360,19 @@ function App() {
         }
       });
 
-      setData((prev) => ({ ...(prev || {}), ...mergedFields }));
       setEditedData((prev) => ({ ...prev, ...mergedFields }));
       setIsEditing(true);
+      setFileName(file.name);
 
       showNotif("CV parsed successfully! Please review and save.", "success");
 
     } catch (err) {
       console.error(err);
-      showNotif("CV upload failed. Please try again.", "error");
+      showNotif(err.name === "AbortError" ? "CV parsing timed out. Please try again." : "CV upload failed. Please try again.", "error");
+    } finally {
+      clearTimeout(timeout);
+      parsingRef.current = false;
+      setParsing(false);
     }
   };
 
@@ -347,52 +386,47 @@ function App() {
 
   /* ---------- UPDATE ---------- */
   const updateContact = async () => {
-    const charLimitFields = [
-      { key: "Consulting_Experience",              label: "Consulting",          max: 2500 },
-      { key: "Training_Experience",                label: "Training",            max: 2500 },
-      { key: "Ins_skills",                         label: "Skills",              max: 222  },
-      { key: "Certification",                      label: "Other Certifications",max: 2500 },
-      { key: "What_are_the_next_steps_w_r_t_Learning", label: "Long Term Goals", max: 2500 },
-      { key: "Description",                        label: "Feedback",            max: 2500 },
-    ];
-
-    for (const { key, label, max } of charLimitFields) {
-      const val = (editedData[key] ?? data[key] ?? "").toString();
-      if (val.length > max) {
-        showNotif(`"${label}" exceeds the ${max}-character limit (${val.length} chars). Please shorten it before saving.`, "error");
-        return;
-      }
-    }
-    const res = await fetch("https://zoho-skill-update.onrender.com/contact", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: data.id,
-        data: editedData,
-        userEmail: data.Email || email,
-        userName: editedData.First_Name || data.First_Name || "",
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!result.success) {
-      showNotif("Update failed: " + (result.error || "Unknown error"), "error");
+    if (savingRef.current || parsingRef.current) return;
+    if (!sessionToken) {
+      showNotif("Your session has ended. Reload and verify your email again.", "error");
       return;
     }
-
-    setData({ ...data, ...editedData });
-    setEditedData({});
-    setIsEditing(false);
-
-    showNotif("Thank you for updating your profile! You can see the updates here.", "success");
+    const updates = { ...editedData };
+    // Persist the displayed default whenever a new phone number is entered.
+    if (updates.Mobile && !updates.Country_Code && !data.Country_Code) updates.Country_Code = "+91";
+    for (const [key, value] of Object.entries(updates)) {
+      const error = validateField(key, value);
+      if (error) { showNotif(error, "error"); return; }
+    }
+    if (!Object.keys(updates).length) return;
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      await requestJSON("/contact", {
+        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionToken}` },
+        body: JSON.stringify({ id: data.id, data: updates }),
+      });
+      setData(prev => ({ ...prev, ...updates }));
+      setEditedData({});
+      setIsEditing(false);
+      showNotif("Thank you for updating your profile! You can see the updates here.");
+    } catch (err) {
+      if (err.status === 401) {
+        setSessionToken("");
+        setIsFetched(false);
+        setStep("email");
+        setOtpDigits(Array(6).fill(""));
+      }
+      showNotif(err.message, "error");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   return (
     <div className="page">
-      <Notification notif={notif} onClose={() => setNotif(null)} />
+      <Notification notif={notif} onClose={closeNotif} />
       <div className="card">
 
         <div className="cardHeader">
@@ -409,6 +443,8 @@ function App() {
                 className="input"
                 placeholder="you@example.com"
                 type="email"
+                aria-label="Email address"
+                disabled={otpLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendOTP()}
@@ -433,27 +469,28 @@ function App() {
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
-                    value={otp[i] || ""}
+                    aria-label={`OTP digit ${i + 1}`}
+                    value={otpDigits[i]}
                     autoFocus={i === 0}
                     disabled={verifyLoading}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "").slice(-1);
-                      const chars = Array.from({ length: 6 }, (_, k) => otp[k] || "");
+                      const chars = [...otpDigits];
                       chars[i] = val;
                       const newOtp = chars.join("");
-                      setOtp(newOtp.trimEnd());
+                      setOtpDigits(chars);
                       if (val && i < 5) document.getElementById(`otp-box-${i + 1}`).focus();
-                      if (/^\d{6}$/.test(newOtp)) fetchData(newOtp);
+                      if (chars.every(Boolean)) fetchData(newOtp);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === "Backspace" && !otp[i] && i > 0) {
+                      if (e.key === "Backspace" && !otpDigits[i] && i > 0) {
                         document.getElementById(`otp-box-${i - 1}`).focus();
                       }
                     }}
                     onPaste={(e) => {
                       const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
                       if (pasted) {
-                        setOtp(pasted);
+                        setOtpDigits(Array.from({ length: 6 }, (_, k) => pasted[k] || ""));
                         document.getElementById(`otp-box-${Math.min(pasted.length, 5)}`)?.focus();
                         if (pasted.length === 6) fetchData(pasted);
                         e.preventDefault();
@@ -466,14 +503,17 @@ function App() {
                 ? <p className="authSubtitle otpVerifying">Verifying…</p>
                 : <p className="authSubtitle otpHint">Auto-verifies when all digits are entered</p>
               }
-              <button className="authBack" onClick={() => { setStep("email"); setOtp(""); }}>
+              <button className="authBack" onClick={sendOTP} disabled={otpLoading || verifyLoading}>
+                {otpLoading ? "Sending…" : "Resend code"}
+              </button>
+              <button className="authBack" disabled={verifyLoading || otpLoading} onClick={() => { authVersionRef.current++; setStep("email"); setOtpDigits(Array(6).fill("")); }}>
                 ← Change email
               </button>
             </div>
           )}
 
-          {data && (
-            <div className="dataContainer">
+          {data && isFetched && (
+            <fieldset className="dataContainer" inert={saving || parsing} disabled={saving || parsing} style={{ border: 0, margin: 0, padding: 0, minWidth: 0, pointerEvents: saving || parsing ? "none" : "auto" }}>
 
               <div className="welcomeBanner">
                 <span className="welcomeWave">👋</span>
@@ -507,9 +547,10 @@ function App() {
                   <div className="fileUploadArea">
                     <input
                       type="file"
+                      accept=".pdf,application/pdf"
                       id="cvUpload"
                       style={{ display: "none" }}
-                      onChange={(e) => handleCVUpload(e.target.files[0])}
+                      onChange={(e) => { handleCVUpload(e.target.files[0]); e.target.value = ""; }}
                     />
                     <button
                       className="primaryBtn"
@@ -517,7 +558,7 @@ function App() {
                         document.getElementById("cvUpload").click()
                       }
                     >
-                      Choose File
+                      {parsing ? "Parsing…" : "Choose PDF (max 10 MB)"}
                     </button>
                     {fileName && (
                       <span className="fileName">✓ {fileName}</span>
@@ -528,18 +569,18 @@ function App() {
 
               <Section title="Basic Info">
                 <Field label="Name" field="First_Name" {...props()}
-                  hint="Letters, spaces, and hyphens only"
+                  hint="Letters, spaces, hyphens, and apostrophes"
                   maxLength={100}
-                  validate={(v) => v && !/^[a-zA-Z\s\-'.]+$/.test(v) ? "Only letters, spaces, hyphens, and apostrophes allowed" : ""}
+                  validate={(v) => validateField("First_Name", v)}
                 />
 
                 <div className="fieldRow">
-                  <label className="label">Phone</label>
+                  <label className="label" htmlFor="mobile">Phone</label>
                   <div className="fieldInputWrapper">
                     <div className="phoneInputGroup">
                       <select
                         className="input countryCodeSelect"
-                        disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
+                        aria-label="Phone country code"
                         onChange={(e) => {
                           setIsEditing(true);
                           handleChange("Country_Code", e.target.value);
@@ -552,9 +593,10 @@ function App() {
                       </select>
                       <input
                         className="input"
+                        id="mobile"
+                        inputMode="tel"
                         placeholder="Phone number"
                         value={editedData["Mobile"] ?? data["Mobile"] ?? ""}
-                        disabled={data.Mobile && data.Mobile.toString().trim() !== ""}
                         maxLength={15}
                         onChange={(e) => {
                           setIsEditing(true);
@@ -563,6 +605,7 @@ function App() {
                       />
                     </div>
                     <div className="fieldMeta">
+                      <span className="fieldError">{validateField("Mobile", editedData.Mobile ?? data.Mobile ?? "")}</span>
                       <span className="fieldHint">Digits only · 7–15 numbers</span>
                     </div>
                   </div>
@@ -570,7 +613,7 @@ function App() {
 
                 <Field label="LinkedIn URL" field="LinkedIn_URL" {...props()}
                   hint="e.g. https://www.linkedin.com/in/yourname"
-                  validate={(v) => v && !v.toLowerCase().includes("linkedin.com") ? "Must be a valid LinkedIn URL" : ""}
+                  validate={(v) => validateField("LinkedIn_URL", v)}
                 />
                 <Field label="US Visa" field="US_Visa" type="checkbox" {...props()} />
                 <BusinessDomainField
@@ -615,9 +658,10 @@ function App() {
                 />
 
                 <div className="fieldRow">
-                  <label className="label">Country</label>
+                  <label className="label" htmlFor="country">Country</label>
                   <select
                     className="input"
+                    id="country"
                     value={editedData["Country"] ?? data["Country"] ?? ""}
                     onChange={(e) => {
                       setIsEditing(true);
@@ -684,12 +728,12 @@ function App() {
               {isEditing && (
                 <div className="saveContainer">
                   <button className="primaryBtn" onClick={updateContact}>
-                    Save Changes
+                    {saving ? "Saving…" : "Save Changes"}
                   </button>
                 </div>
               )}
 
-            </div>
+            </fieldset>
           )}
 
         </div>
@@ -717,27 +761,16 @@ const Section = ({ title, children }) => (
 );
 
 const Field = ({ label, field, type, data, editedData, handleChange, setIsEditing, hint, maxLength, validate }) => {
-  const [error, setError] = useState("");
-  const originalValue = data[field];
-  const value = editedData[field] ?? originalValue ?? "";
+  const value = editedData[field] ?? data[field] ?? "";
   const strValue = value != null ? value.toString() : "";
-
-  const basicFields = ["First_Name", "Mobile", "LinkedIn_URL"];
-  const isDisabled =
-    basicFields.includes(field) &&
-    originalValue &&
-    originalValue.toString().trim() !== "";
-
-  const checkError = (val) => {
-    if (!validate || isDisabled) return "";
-    return validate(val) || "";
-  };
+  const error = type === "checkbox" ? "" : (validate ? validate(strValue) : validateField(field, strValue));
 
   return (
     <div className="fieldRow">
-      <label className="label">{label}</label>
+      <label className="label" htmlFor={field}>{label}</label>
       {type === "checkbox" ? (
         <input
+          id={field}
           type="checkbox"
           style={{ width: "20px", height: "20px", cursor: "pointer" }}
           checked={value === true || value === "true" || value === "Yes" || value === "yes"}
@@ -749,16 +782,14 @@ const Field = ({ label, field, type, data, editedData, handleChange, setIsEditin
       ) : (
         <div className="fieldInputWrapper">
           <input
+            id={field}
             className={`input${error ? " inputError" : ""}`}
             value={strValue}
-            disabled={isDisabled}
             maxLength={maxLength}
             onChange={(e) => {
               setIsEditing(true);
               handleChange(field, e.target.value);
-              if (error) setError(checkError(e.target.value));
             }}
-            onBlur={(e) => setError(checkError(e.target.value))}
           />
           {(hint || maxLength || error) && (
             <div className="fieldMeta">
@@ -791,9 +822,10 @@ const TextAreaField = ({ label, field, data, editedData, handleChange, setIsEdit
 
   return (
     <div className="fieldRow fieldRowTop">
-      <label className="label">{label}</label>
+      <label className="label" htmlFor={field}>{label}</label>
       <div className="fieldInputWrapper">
         <textarea
+          id={field}
           className={`textarea${isOver ? " inputError" : ""}`}
           value={strValue}
           onChange={(e) => {
@@ -856,10 +888,16 @@ const MultiSelectField = ({
 
   return (
     <div className="fieldRow fieldRowTop">
-      <label className="label">{label}</label>
+      <label className="label" htmlFor={field}>{label}</label>
 
       <div className="dropdownContainer" ref={ref}>
         <div
+          id={field}
+          role="button"
+          tabIndex={0}
+          aria-label={label}
+          aria-expanded={open}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(!open); } if (e.key === "Escape") setOpen(false); }}
           className={`dropdownHeader ${open ? "active" : ""}`}
           onClick={() => setOpen(!open)}
         >
@@ -942,9 +980,15 @@ const BusinessDomainField = ({ label, field, data, editedData, handleChange, set
 
   return (
     <div className="fieldRow fieldRowTop">
-      <label className="label">{label}</label>
+      <label className="label" htmlFor={field}>{label}</label>
       <div className="dropdownContainer" ref={ref}>
         <div
+          id={field}
+          role="button"
+          tabIndex={0}
+          aria-label={label}
+          aria-expanded={open}
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(!open); } if (e.key === "Escape") setOpen(false); }}
           className={`dropdownHeader ${open ? "active" : ""}`}
           onClick={() => setOpen(!open)}
         >
