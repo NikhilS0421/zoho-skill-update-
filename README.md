@@ -115,6 +115,7 @@ zoho-form-app/
 - OTP values are cryptographically generated and stored as hashes in memory
 - Resends limited to once per minute and 5 per email per hour; IP limits also apply
 - Successful verification returns a bearer session valid for 1 hour, tied to the verified contact
+- Contact lookup matches the verified address against primary and secondary email fields; custom email fields can be listed in `ZOHO_CONTACT_EMAIL_FIELDS`
 - Profile updates require the session and only accept allowed, validated fields
 - Email sent via Resend from `otp@support.datacouch.io`
 

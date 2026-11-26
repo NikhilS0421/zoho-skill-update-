@@ -12,7 +12,7 @@ async function fixture(t, options = {}) {
     ...options.http,
   };
   const mailer = { emails: { send: async message => { sent.push(message); return options.mailError ? { error: { message: 'failed' } } : { data: { id: 'mock' } }; } } };
-  const app = createApp({ http, mailer, tokenProvider: async () => 'mock-token', now: () => time, env: {} });
+  const app = createApp({ http, mailer, tokenProvider: async () => 'mock-token', now: () => time, env: options.env || {} });
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
@@ -103,4 +103,43 @@ test('rejects malformed request bodies with JSON errors', async t => {
   const f = await fixture(t);
   assert.equal((await f.request('/send-otp', null)).status, 400);
   assert.equal((await f.request('/send-otp', { email: ['person@example.test'] })).status, 400);
+});
+
+
+test('accepts a verified secondary email even when the primary email differs or is empty', async t => {
+  for (const primary of ['primary@example.test', null]) {
+    await t.test(String(primary), async t => {
+      const f = await fixture(t, { http: { get: async () => ({ data: { data: [{
+        id: 'contact-1', Email: primary, Secondary_Email: ' Person@Example.Test ',
+      }] } }) } });
+      const login = await f.login();
+      assert.equal(login.status, 200);
+      assert.equal(login.data.id, 'contact-1');
+      assert.equal((await f.request('/contact', { id: 'contact-1', data: { Ins_skills: 'JS' } }, login.sessionToken, 'PUT')).success, true);
+    });
+  }
+});
+
+test('matches configured custom email fields without trusting unrelated fields', async t => {
+  const record = { id: 'contact-1', Email: 'primary@example.test', Instructor_Email: 'person@example.test', Description: 'person@example.test' };
+  const http = { get: async () => ({ data: { data: [record] } }) };
+  const unconfigured = await fixture(t, { http });
+  assert.equal((await unconfigured.login()).status, 404);
+  const configured = await fixture(t, { http, env: { ZOHO_CONTACT_EMAIL_FIELDS: 'Instructor_Email' } });
+  assert.equal((await configured.login()).status, 200);
+});
+
+test('retains exact email matching for similar-looking search results', async t => {
+  const f = await fixture(t, { http: { get: async () => ({ data: { data: [{
+    id: 'wrong', Email: 'person+other@example.test', Secondary_Email: 'person@example.test.evil',
+  }] } }) } });
+  assert.equal((await f.login()).status, 404);
+});
+
+test('allows retrying a verified code after the CRM email mapping is corrected', async t => {
+  const f = await fixture(t, { http: { get: async () => ({ status: 204, data: '' }) } });
+  await f.send();
+  assert.equal((await f.verify()).status, 404);
+  f.http.get = async () => ({ data: { data: [{ id: 'contact-1', Secondary_Email: 'person@example.test' }] } });
+  assert.equal((await f.verify()).status, 200);
 });

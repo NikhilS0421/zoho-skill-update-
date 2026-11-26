@@ -20,6 +20,11 @@ function createApp({ http = axios, mailer, tokenProvider = getAccessToken, now =
   const otps = new Map();
   const sessions = new Map();
   const limits = new Map();
+  // Zoho's email search includes secondary and custom email fields, not just Email.
+  // Custom fields must be explicitly configured rather than trusting arbitrary record values.
+  const contactEmailFields = [...new Set(['Email', 'Secondary_Email',
+    ...(env.ZOHO_CONTACT_EMAIL_FIELDS || '').split(',').map(field => field.trim()).filter(Boolean),
+  ])];
   // Set only when deployed behind a known number of trusted reverse proxies.
   if (env.TRUST_PROXY_HOPS) app.set('trust proxy', Number(env.TRUST_PROXY_HOPS));
   const origins = (env.FRONTEND_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
@@ -93,10 +98,17 @@ function createApp({ http = axios, mailer, tokenProvider = getAccessToken, now =
       const response = await http.get('https://www.zohoapis.com/crm/v2/Contacts/search', {
         params: { email }, headers: { Authorization: `Zoho-oauthtoken ${token}` }, timeout: 15000,
       });
-      const contact = response.data?.data?.find(c => normalizeEmail(c.Email) === email);
+      const records = Array.isArray(response.data?.data) ? response.data.data : [];
+      const contact = records.find(record => record && contactEmailFields.some(field =>
+        normalizeEmail(record[field]) === email
+      ));
       if (!contact?.id) {
-        if (otps.get(email) === entry) otps.delete(email);
-        return res.status(404).json({ success: false, error: 'No contact found for this email.' });
+        entry.verifying = false;
+        // Log only lookup diagnostics, never the returned contact records or OTP.
+        console.warn('Contact lookup found no verified email match:', {
+          status: response.status, recordsReturned: records.length, emailFieldsChecked: contactEmailFields,
+        });
+        return res.status(404).json({ success: false, error: 'No contact found for this email. Please use an email saved on your Zoho contact or contact support.' });
       }
       if (otps.get(email) !== entry || entry.expiresAt <= now()) {
         return res.status(401).json({ success: false, error: 'Code expired or was replaced. Request a new code.' });
